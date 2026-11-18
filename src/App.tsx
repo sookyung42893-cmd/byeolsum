@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { BrowserRouter, MemoryRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
 import Welcome from './pages/Welcome';
@@ -26,7 +27,11 @@ import ConfirmHost from './components/ConfirmHost';
  * 공유 링크(Artifact)용 빌드(VITE_ROUTER=memory)에서는 주소를 건드리지 않는 MemoryRouter를 쓴다.
  * 공유 링크 안에서는 주소 경로나 #/경로가 오가지 않기 때문이다.
  */
-const Router = import.meta.env.VITE_ROUTER === 'memory' ? MemoryRouter : BrowserRouter;
+function Router({ children }: { children: ReactNode }) {
+  if (import.meta.env.VITE_ROUTER === 'memory') return <MemoryRouter>{children}</MemoryRouter>;
+  // GitHub Pages에서는 https://아이디.github.io/byeolsum/ 아래에서 열리므로 그 경로를 기준으로 삼는다 (개발할 때는 '/')
+  return <BrowserRouter basename={import.meta.env.BASE_URL}>{children}</BrowserRouter>;
+}
 
 export default function App() {
   return (
