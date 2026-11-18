@@ -1,0 +1,13 @@
+# Netlify 자동 배포 설정: GitHub에 올리면 이 설정대로 빌드해서 홈페이지를 갱신한다
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# 화면 경로(/student/sky 등)로 바로 들어오거나 새로고침해도 앱이 열리게 모두 index.html로 보낸다
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

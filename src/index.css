@@ -1,0 +1,301 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html,
+  body {
+    @apply font-sans antialiased;
+    min-width: 1280px;
+  }
+  body {
+    background: #0b1026;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-display;
+  }
+  /*
+   * 포커스 표시 (앱 전체)
+   * - 마우스로 누를 때는 아무 테두리도 보이지 않고(:focus), 키보드(Tab)로 옮길 때만(:focus-visible) 보인다
+   * - 흰 테두리 대신 그 요소 색의 빛 번짐. 색은 --focus-color로 정하고, 없으면 강조색
+   *   (학생 화면 #F4C979, 상담사 화면 #3B45A8). 행성·별처럼 자기 색이 있는 요소는 style로 --focus-color를 준다
+   */
+  .theme-night {
+    --focus-color: #f4c979;
+  }
+  .theme-obs {
+    --focus-color: #3b45a8;
+  }
+  :focus:not(:focus-visible) {
+    outline: none;
+  }
+  .theme-night :focus-visible,
+  .theme-obs :focus-visible {
+    outline: none;
+    box-shadow:
+      0 0 0 2px var(--focus-color),
+      0 0 14px 3px color-mix(in srgb, var(--focus-color) 55%, transparent);
+  }
+  /* SVG 안의 요소(밤하늘 별, 행성 등)는 상자 그림자가 안 되므로 모양을 따라 번지는 빛으로 */
+  .theme-night svg :focus-visible,
+  .theme-obs svg :focus-visible {
+    box-shadow: none;
+    filter: drop-shadow(0 0 2px var(--focus-color)) drop-shadow(0 0 7px var(--focus-color));
+  }
+  /* 항해 지도: 이름표까지 번지지 않게 천체 그림에만 빛을 준다 */
+  .theme-night svg .map-station:focus-visible {
+    filter: none;
+  }
+  .map-station:focus-visible .station-body {
+    filter: drop-shadow(0 0 3px var(--focus-color)) drop-shadow(0 0 10px var(--focus-color));
+  }
+}
+
+/* 배경 별똥별: 꼬리(왼쪽)는 투명, 머리(오른쪽)는 밝게. 회전 후 머리가 진행 방향을 향한다 */
+.meteor {
+  position: absolute;
+  height: 1.5px;
+  border-radius: 9999px;
+  background: linear-gradient(to right, rgba(244, 201, 121, 0), rgba(255, 255, 255, 0.95));
+  filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+  transform-origin: left center;
+  opacity: 0;
+  animation-name: meteor-fall;
+  animation-timing-function: ease-in;
+  animation-fill-mode: forwards;
+}
+
+/* 반짝이는 별(✦): 제자리에서 커졌다 작아지며 살짝 돈다 */
+.twinkle {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 1.6s ease-in-out infinite;
+}
+.twinkle-slow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle 2.6s ease-in-out infinite reverse;
+}
+.twinkle-soft {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: twinkle-soft 3.2s ease-in-out infinite;
+}
+@keyframes courage-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.6);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-4px) scale(1.08);
+  }
+  to {
+    transform: translateY(0) scale(1);
+  }
+}
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@keyframes twinkle-soft {
+  0%,
+  100% {
+    transform: scale(0.8);
+    opacity: 0.75;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 1;
+  }
+}
+@keyframes twinkle {
+  0%,
+  100% {
+    transform: scale(0.82) rotate(0deg);
+    opacity: 0.85;
+  }
+  50% {
+    transform: scale(1.15) rotate(18deg);
+    opacity: 1;
+  }
+}
+/* 항해 지도 행성들의 느리고 은은한 움직임 (눈에 보일 만큼은 크게) */
+.planet-float {
+  animation: planet-float 5.5s ease-in-out infinite;
+}
+@keyframes planet-float {
+  0%,
+  100% {
+    transform: translateY(-3.5px);
+  }
+  50% {
+    transform: translateY(3.5px);
+  }
+}
+.ember-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: ember-glow 5s ease-in-out infinite;
+}
+@keyframes ember-glow {
+  0%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.9);
+  }
+  50% {
+    opacity: 0.85;
+    transform: scale(1.12);
+  }
+}
+.facet-shimmer {
+  animation: facet-shimmer 4s ease-in-out infinite;
+}
+@keyframes facet-shimmer {
+  0%,
+  100% {
+    opacity: 0.05;
+  }
+  50% {
+    opacity: 0.75;
+  }
+}
+.mirror-sheen {
+  animation: mirror-sheen 7s ease-in-out infinite alternate;
+}
+@keyframes mirror-sheen {
+  from {
+    transform: translateY(-12px);
+  }
+  to {
+    transform: translateY(14px);
+  }
+}
+.heart-ring {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: heart-ring 2.8s ease-out infinite;
+}
+@keyframes heart-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  70%,
+  100% {
+    transform: scale(1.75);
+    opacity: 0;
+  }
+}
+.wave-drift {
+  animation: wave-drift 7s linear infinite;
+}
+/* 너울: 물결 줄이 위아래로 출렁인다 */
+.wave-swell {
+  animation: wave-swell 3.6s ease-in-out infinite;
+}
+@keyframes wave-swell {
+  0%,
+  100% {
+    transform: translateY(-3px);
+  }
+  50% {
+    transform: translateY(3px);
+  }
+}
+/* 별빛: 바깥 빛이 크게 숨 쉰다 */
+.pearl-aura {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pearl-aura 5s ease-in-out infinite;
+}
+@keyframes pearl-aura {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.85);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.2);
+  }
+}
+@keyframes wave-drift {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-40px);
+  }
+}
+.pearl-glow {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: pearl-glow 5s ease-in-out infinite;
+}
+@keyframes pearl-glow {
+  0%,
+  100% {
+    opacity: 0.25;
+    transform: scale(0.6);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+.nebula-breathe {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: nebula-breathe 8s ease-in-out infinite;
+}
+@keyframes nebula-breathe {
+  0%,
+  100% {
+    transform: scale(0.92);
+    opacity: 0.7;
+  }
+  50% {
+    transform: scale(1.08);
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .twinkle,
+  .twinkle-slow,
+  .twinkle-soft,
+  .planet-float,
+  .ember-glow,
+  .facet-shimmer,
+  .mirror-sheen,
+  .heart-ring,
+  .wave-drift,
+  .wave-swell,
+  .pearl-aura,
+  .pearl-glow,
+  .nebula-breathe {
+    animation: none;
+  }
+}
+
+@keyframes meteor-fall {
+  0% {
+    opacity: 0;
+    transform: translate(0, 0) rotate(var(--angle)) scaleX(0.3);
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1);
+  }
+}
