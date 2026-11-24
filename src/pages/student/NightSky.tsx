@@ -164,12 +164,6 @@ function StarCard({ star, onClose }: { star: StarView; onClose: () => void }) {
   );
 }
 
-interface CourageView {
-  c: Challenge;
-  x: number;
-  y: number;
-}
-
 /** 다섯 갈래 별 path (용기의 별) */
 function courageStarPath(cx: number, cy: number, r: number): string {
   const pts = Array.from({ length: 10 }, (_, i) => {
@@ -180,48 +174,86 @@ function courageStarPath(cx: number, cy: number, r: number): string {
   return `M ${pts.join(' L ')} Z`;
 }
 
-/** 용기의 별 자리: 시도한 순서대로 밤하늘 위쪽 띠에 고르게, 가운데 축과 이름표는 피해서 */
-function courageStarPositions(list: Challenge[]): CourageView[] {
+/**
+ * 용기의 별 띠: 감정 좌표판(밤하늘) 위에 따로 있는 금빛 띠.
+ * 감정 별과 달리 자리에 뜻이 없고, 도전 미션을 시도할 때마다 하나씩 왼쪽부터 쌓인다 (기간 제한 없이 모두).
+ */
+function CourageBand({ list }: { list: Challenge[] }) {
+  const [openId, setOpenId] = useState<string | null>(null);
   const sorted = [...list].sort((a, b) => (a.completedAt ?? a.createdAt).localeCompare(b.completedAt ?? b.createdAt));
-  const n = sorted.length;
-  return sorted.map((c, i) => {
-    let x = 70 + ((i + 0.5) * (W - 140)) / Math.max(n, 1);
-    if (Math.abs(x - W / 2) < 44) x += x < W / 2 ? -44 : 44;
-    const h = [...c.id].reduce((s, ch) => (s * 31 + ch.charCodeAt(0)) % 997, 7);
-    return { c, x, y: 38 + (h % 28) };
-  });
-}
+  const open = sorted.find((c) => c.id === openId);
 
-/** 용기의 별을 누르면 뜨는 작은 카드 */
-function CourageCard({ star, onClose }: { star: CourageView; onClose: () => void }) {
-  const { c, x, y } = star;
   return (
-    <div
-      role="dialog"
-      aria-label={`용기의 별: ${c.title}`}
-      className="absolute z-10 w-[min(19rem,42%)] rounded-2xl border border-night-star/60 bg-night-card/95 p-4 text-sm shadow-xl backdrop-blur"
-      style={{ left: `${Math.min(Math.max((x / W) * 100, 22), 78)}%`, top: `${(y / H) * 100}%`, transform: 'translate(-50%, 26px)' }}
-      onKeyDown={(e) => e.key === 'Escape' && onClose()}
+    <section
+      aria-labelledby="courage-band-title"
+      className="mb-3 rounded-3xl border border-night-star/30 bg-[linear-gradient(90deg,#2A2440_0%,#161B3C_60%,#12173A_100%)] px-5 py-3"
     >
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <p className="font-medium text-night-star">용기의 별</p>
-          <p className="mt-0.5 text-xs text-night-sub">
-            {c.session}회기 · {c.step}단계 · {formatDate(c.completedAt ?? c.createdAt)}에 시도
-          </p>
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-2">
+        <div className="shrink-0">
+          <h2 id="courage-band-title" className="flex items-center gap-1.5 font-sans text-sm font-medium text-night-star">
+            <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
+              <path d={courageStarPath(10, 10, 8)} fill="#F4C979" />
+            </svg>
+            용기의 별 {sorted.length}개
+          </h2>
+          <p className="text-xs text-night-sub">도전 미션을 해 볼 때마다 하나씩 떠</p>
         </div>
-        <button type="button" onClick={onClose} aria-label="카드 닫기" className="-mr-1 -mt-1 rounded-lg p-1 text-night-sub hover:text-night-text">
-          <X aria-hidden="true" className="h-4 w-4" />
-        </button>
+        {sorted.length > 0 ? (
+          <ul className="flex flex-wrap gap-1.5" aria-label="용기의 별 목록">
+            {sorted.map((c) => {
+              const selected = openId === c.id;
+              return (
+                <li key={c.id}>
+                  <button
+                    type="button"
+                    aria-pressed={selected}
+                    aria-label={`용기의 별: ${c.title}, ${formatDate(c.completedAt ?? c.createdAt)}에 시도함`}
+                    onClick={() => setOpenId(selected ? null : c.id)}
+                    className={`flex h-9 w-9 items-center justify-center rounded-full transition motion-safe:hover:scale-110 ${selected ? 'bg-night-star/25' : ''}`}
+                    style={{ ['--focus-color' as string]: '#F4C979' }}
+                  >
+                    <svg viewBox="0 0 24 24" className="h-7 w-7 drop-shadow-[0_0_6px_rgba(244,201,121,0.6)]" aria-hidden="true">
+                      <path d={courageStarPath(12, 12, 10)} fill="#F4C979" stroke="#FFE7B0" strokeWidth={1} strokeLinejoin="round" />
+                    </svg>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : (
+          <p className="text-sm text-night-sub">
+            아직 없어.{' '}
+            <Link to="/student/challenge" className="text-night-star underline-offset-4 hover:underline">
+              도전 미션
+            </Link>
+            을 해 보면 여기에 금빛 별이 떠.
+          </p>
+        )}
       </div>
-      <p className="mt-2 text-night-text">{c.title}</p>
-      {c.predicted !== undefined && c.actual !== undefined && (
-        <p className="mt-1 text-xs text-night-sub">
-          마음 점수 예상 {c.predicted} → 실제 {c.actual}
-        </p>
+
+      {open && (
+        <div
+          role="region"
+          aria-label={`용기의 별: ${open.title}`}
+          className="mt-3 rounded-2xl border border-night-star/50 bg-night-card/95 p-4 text-sm motion-safe:animate-[fadein_0.3s_ease-out]"
+          onKeyDown={(e) => e.key === 'Escape' && setOpenId(null)}
+        >
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <p className="text-night-text">{open.title}</p>
+              <p className="mt-0.5 text-xs text-night-sub">
+                {open.session}회기 · {open.step}단계 · {formatDate(open.completedAt ?? open.createdAt)}에 시도
+                {open.predicted !== undefined && open.actual !== undefined && ` · 마음 점수 예상 ${open.predicted} → 실제 ${open.actual}`}
+              </p>
+            </div>
+            <button type="button" onClick={() => setOpenId(null)} aria-label="카드 닫기" className="-mr-1 -mt-1 rounded-lg p-1 text-night-sub hover:text-night-text">
+              <X aria-hidden="true" className="h-4 w-4" />
+            </button>
+          </div>
+          {open.reflection && <p className="mt-2 rounded-xl bg-night-bg/70 px-3 py-2 text-night-text">{open.reflection}</p>}
+        </div>
       )}
-      {c.reflection && <p className="mt-2 rounded-xl bg-night-bg/70 px-3 py-2 text-night-text">{c.reflection}</p>}
-    </div>
+    </section>
   );
 }
 
@@ -438,19 +470,12 @@ export default function NightSkyPage() {
   const focusWord = hoverWord ?? selectedWord ?? hoverStar?.c.emotionWord ?? pinned?.c.emotionWord ?? null;
   const dimmed = (word: string) => focusWord !== null && word !== focusWord;
 
-  // 용기의 별: 시도한 도전 미션마다 하나. 감정 좌표가 아니라 밤하늘 위쪽 띠에 뜬다
-  const courage = useMemo(() => courageStarPositions(db.challenges.filter((c) => c.studentId === student.id && c.status === '완료')), [db.challenges, student.id]);
-  const [pinnedCourageId, setPinnedCourageId] = useState<string | null>(null);
-  const pinnedCourage = courage.find((s) => s.c.id === pinnedCourageId);
+  // 용기의 별: 시도한 도전 미션마다 하나. 감정 좌표판이 아니라 그 위의 따로 된 띠에 뜬다
+  const courage = useMemo(() => db.challenges.filter((c) => c.studentId === student.id && c.status === '완료'), [db.challenges, student.id]);
 
   const togglePin = (id: string) => {
     setSelectedWord(null);
-    setPinnedCourageId(null);
     setPinnedId(pinnedId === id ? null : id);
-  };
-  const toggleCourage = (id: string) => {
-    setPinnedId(null);
-    setPinnedCourageId(pinnedCourageId === id ? null : id);
   };
   const onStarKey = (e: KeyboardEvent, id: string) => {
     if (e.key === 'Enter' || e.key === ' ') {
@@ -466,6 +491,8 @@ export default function NightSkyPage() {
           <h1 className="text-3xl text-night-text">나의 밤하늘</h1>
           <p className="mt-2 text-night-sub">최근 7일 동안 띄운 마음들이야. 별을 누르면 그 별의 기록을 볼 수 있어.</p>
         </header>
+
+        <CourageBand list={courage} />
 
         <div className="relative overflow-hidden rounded-3xl border border-night-line bg-[radial-gradient(ellipse_at_top,#18204A_0%,#0B1026_70%)]">
           <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="group" aria-label={`이번 주 밤하늘, 별 ${stars.length}개`}>
@@ -548,39 +575,11 @@ export default function NightSkyPage() {
               );
             })}
 
-            {/* 용기의 별 (일반 별과 다른 다섯 갈래 금빛 별) */}
-            {courage.map(({ c, x, y }) => {
-              const selected = pinnedCourageId === c.id;
-              return (
-                <g
-                  key={c.id}
-                  tabIndex={0}
-                  role="button"
-                  aria-pressed={selected}
-                  aria-label={`용기의 별: ${c.title}, ${formatDate(c.completedAt ?? c.createdAt)}에 시도함`}
-                  className="sky-star cursor-pointer"
-                  style={{ '--focus-color': '#F4C979' } as CSSProperties}
-                  onClick={() => toggleCourage(c.id)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      e.preventDefault();
-                      toggleCourage(c.id);
-                    } else if (e.key === 'Escape') setPinnedCourageId(null);
-                  }}
-                  opacity={focusWord ? 0.35 : 1}
-                >
-                  <circle cx={x} cy={y} r={16} fill="transparent" />
-                  <circle cx={x} cy={y} r={selected ? 18 : 13} fill="#F4C979" opacity={selected ? 0.36 : 0.18} filter="url(#ring-glow)" />
-                  <path d={courageStarPath(x, y, 9)} fill="#F4C979" stroke="#FFE7B0" strokeWidth={1} strokeLinejoin="round" />
-                </g>
-              );
-            })}
           </svg>
 
           {pinned && <StarCard star={pinned} onClose={() => setPinnedId(null)} />}
-          {pinnedCourage && <CourageCard star={pinnedCourage} onClose={() => setPinnedCourageId(null)} />}
 
-          {stars.length === 0 && courage.length === 0 && (
+          {stars.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
               <p className="font-display text-xl text-night-text">이번 주 밤하늘은 아직 고요해.</p>
               <p className="text-night-sub">마음이 떠오를 때 하나씩 띄워보면 돼.</p>
@@ -599,14 +598,6 @@ export default function NightSkyPage() {
           </ul>
           <p className="text-xs text-night-sub">클수록, 밝을수록 강한 마음이야</p>
         </div>
-        {courage.length > 0 && (
-          <p className="mt-2 flex items-center gap-1.5 text-xs text-night-sub">
-            <svg viewBox="0 0 20 20" className="h-4 w-4" aria-hidden="true">
-              <path d={courageStarPath(10, 10, 8)} fill="#F4C979" />
-            </svg>
-            하늘 위쪽의 금빛 별은 용기의 별이야. 도전 미션을 해 볼 때마다 하나씩 떠.
-          </p>
-        )}
         <ul aria-label="망원경 관측 색 안내" className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-night-sub">
           <li>망원경으로 관측하면 별빛에 색이 스며들어:</li>
           {(Object.keys(LENS_TINT) as (keyof typeof LENS_TINT)[]).map((l) => (
