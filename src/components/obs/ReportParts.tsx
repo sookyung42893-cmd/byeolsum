@@ -15,6 +15,7 @@ export function StatTile({
   unit,
   delta,
   note,
+  help,
 }: {
   label: string;
   value: string;
@@ -22,11 +23,14 @@ export function StatTile({
   /** 지난주 대비 변화. 좋고 나쁨을 판단하지 않도록 색은 중립으로 둔다 */
   delta?: { diff: number | null; text: string };
   note?: string;
+  /** 이 지표가 무슨 뜻인지 쉬운 말로 (마우스를 올리지 않아도 늘 보인다) */
+  help?: string;
 }) {
   const Icon = delta?.diff == null || delta.diff === 0 ? Minus : delta.diff > 0 ? ArrowUpRight : ArrowDownRight;
   return (
     <div className="rounded-2xl border border-obs-line bg-obs-card p-5">
-      <p className="text-sm text-obs-sub">{label}</p>
+      <p className="text-sm font-medium text-obs-text">{label}</p>
+      {help && <p className="mt-1 text-xs leading-relaxed text-obs-sub">{help}</p>}
       <p className="mt-2 text-3xl font-semibold text-obs-text">
         {value}
         {unit && <span className="ml-1 text-base font-medium text-obs-sub">{unit}</span>}

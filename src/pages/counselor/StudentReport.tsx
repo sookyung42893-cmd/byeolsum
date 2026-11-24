@@ -89,39 +89,43 @@ export default function StudentReport() {
         </h2>
         <div className="grid grid-cols-4 gap-4">
           <StatTile
-            label="이번 주 체크인"
+            label="이번 주 감정 기록"
+            help="학생이 밤하늘에 감정 별을 띄운(체크인한) 횟수예요."
             value={String(weekly.count.current)}
             unit="회"
             delta={deltaText(weekly.count.current, weekly.count.previous, '회')}
           />
           <StatTile
-            label="이번 주 평균 강도"
+            label="이번 주 감정 세기 평균"
+            help="기록한 감정이 얼마나 셌는지 평균 (0~10). 높을수록 센 감정이 많았어요."
             value={avgCur === null ? '-' : String(round1(avgCur))}
             unit={avgCur === null ? undefined : '/ 10'}
             delta={intensityDelta}
           />
           <StatTile
-            label="별똥별 반감 시간"
+            label="감정이 반으로 줄기까지"
+            help="별똥별로 감정을 지켜볼 때, 가장 셀 때의 세기가 절반으로 내려가기까지 걸린 시간. 짧을수록 감정이 빨리 가라앉아요."
             value={half.avgMinutes === null ? '-' : String(round1(half.avgMinutes))}
             unit={half.avgMinutes === null ? undefined : '분'}
             note={
               half.total === 0
-                ? `최근 ${RECENT_DAYS}일 동안 별똥별 기록이 없어요`
-                : `정점에서 절반 강도까지 · ${half.total}회 중 ${half.reached}회 절반 도달`
+                ? `최근 ${RECENT_DAYS}일 동안 별똥별을 쓴 기록이 없어요`
+                : `최근 ${RECENT_DAYS}일 별똥별 ${half.total}번 중 ${half.reached}번 절반까지 내려갔어요`
             }
           />
           <StatTile
-            label="예보 vs 실제"
+            label="기술 쓰고 예상 vs 실제"
+            help="렌즈·호흡 같은 기술을 쓰기 전 '쓰고 나면 몇 점쯤 될까' 예상한 세기와 실제 세기의 차이예요. 마이너스면 예상보다 더 가라앉았다는 뜻이에요."
             value={gap.avg === null ? '-' : `${gap.avg > 0 ? '+' : ''}${round1(gap.avg)}`}
             unit={gap.avg === null ? undefined : '점'}
             note={
               gap.avg === null
-                ? `최근 ${RECENT_DAYS}일 동안 예보 기록이 없어요`
+                ? `최근 ${RECENT_DAYS}일 동안 기술을 쓴 기록이 없어요`
                 : gap.avg < 0
-                  ? `실제가 예보보다 평균 ${Math.abs(round1(gap.avg))}점 낮았어요 · ${gap.count}회`
+                  ? `예상보다 평균 ${Math.abs(round1(gap.avg))}점 더 가라앉았어요 (${gap.count}번)`
                   : gap.avg > 0
-                    ? `실제가 예보보다 평균 ${round1(gap.avg)}점 높았어요 · ${gap.count}회`
-                    : `예보와 실제가 평균적으로 같았어요 · ${gap.count}회`
+                    ? `예상보다 평균 ${round1(gap.avg)}점 덜 가라앉았어요 (${gap.count}번)`
+                    : `예상과 실제가 평균적으로 같았어요 (${gap.count}번)`
             }
           />
         </div>
