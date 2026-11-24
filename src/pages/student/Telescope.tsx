@@ -293,7 +293,7 @@ export default function TelescopePage() {
       {step === 3 && lensInfo && (
         <section>
           {heading(`${lensInfo.strategy} 렌즈로 관측 중`)}
-          <p className="mt-2 text-night-sub">떠오르는 만큼만 적어도 괜찮아. 하나만 적어도 돼.</p>
+          <p className="mt-2 text-night-sub">세 질문에 모두 답해 줘. 한 줄씩 짧게 적어도 괜찮아.</p>
           <div className="mt-1">
             <VisibleToCounselor />
           </div>
@@ -320,8 +320,13 @@ export default function TelescopePage() {
             onBack={() => setStep(2)}
             onNext={finish}
             nextLabel="관측 마치기"
-            nextDisabled={answers.every((a) => !a.trim())}
+            nextDisabled={answers.some((a) => !a.trim())}
           />
+          {answers.some((a) => !a.trim()) && (
+            <p className="mt-2 text-xs text-night-sub">
+              세 질문에 모두 답하면 관측을 마칠 수 있어 ({answers.filter((a) => a.trim()).length}/{answers.length})
+            </p>
+          )}
         </section>
       )}
 

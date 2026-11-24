@@ -40,7 +40,8 @@ export default function VoyageManualPage() {
   const [letter, setLetter] = useState('');
   const [done, setDone] = useState(false);
 
-  const ready = recipes.some(isComplete) && letter.trim().length > 0;
+  // 추가한 레시피는 세 칸을 모두 채워야 한다 (안 쓸 레시피는 X로 지우면 된다)
+  const ready = recipes.every(isComplete) && letter.trim().length > 0;
   const set = (id: string, key: keyof Omit<Recipe, 'id'>, value: string) =>
     setRecipes((list) => list.map((r) => (r.id === id ? { ...r, [key]: value } : r)));
 
@@ -176,7 +177,7 @@ export default function VoyageManualPage() {
         >
           {alreadyDone ? '매뉴얼 다시 기록하기' : '항해 매뉴얼 완성하기'}
         </button>
-        {!ready && <p className="mt-2 text-xs text-night-sub">레시피 하나(세 칸 모두)와 별빛편지를 쓰면 완성할 수 있어.</p>}
+        {!ready && <p className="mt-2 text-xs text-night-sub">레시피 칸(언제·먼저·그다음)과 별빛편지를 모두 쓰면 완성할 수 있어. 안 쓸 레시피는 X로 지워 줘.</p>}
       </div>
     </PracticeShell>
   );

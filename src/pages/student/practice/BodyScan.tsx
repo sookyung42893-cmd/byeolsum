@@ -129,7 +129,7 @@ export default function BodyScanPage() {
           <BodyMap value={part} onChange={setPart} color="#FF9AAE" />
           <div>
             <label htmlFor="feeling" className="block text-sm text-night-text">
-              어떤 느낌이야? <span className="text-night-sub">(선택)</span>
+              어떤 느낌이야? {part && <span className="text-night-sub">(골랐으면 꼭 적어 줘)</span>}
             </label>
             <input
               id="feeling"
@@ -142,7 +142,12 @@ export default function BodyScanPage() {
           </div>
           <VisibleToCounselor />
           <div className="flex flex-wrap gap-3">
-            <button type="button" onClick={finish} className="rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105">
+            <button
+              type="button"
+              onClick={finish}
+              disabled={Boolean(part) && !feeling.trim()}
+              className="rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
+            >
               {part ? (alreadyDone ? '다시 기록하기' : '기록하기') : '특별히 느껴지는 곳이 없어'}
             </button>
           </div>

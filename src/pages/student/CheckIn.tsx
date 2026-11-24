@@ -474,7 +474,7 @@ function CheckInForm({ editTarget }: { editTarget?: CheckIn }) {
                 onChange={(e) => setSituation(e.target.value)}
                 className="w-full resize-none rounded-xl border border-night-line bg-night-bg px-4 py-3 text-night-text outline-none focus:border-night-star"
               />
-              <p className="mt-1 text-xs text-night-sub">짧게 적어도 돼. 나중에 망원경으로 다시 볼 수 있어.</p>
+              <p className="mt-1 text-xs text-night-sub">꼭 적어 줘. 짧게 적어도 돼. 나중에 망원경으로 다시 볼 수 있어.</p>
               <div className="mt-1">
                 <VisibleToCounselor />
               </div>
@@ -485,7 +485,7 @@ function CheckInForm({ editTarget }: { editTarget?: CheckIn }) {
                 <button
                   type="button"
                   onClick={save}
-                  disabled={!point || !broad}
+                  disabled={!point || !broad || !situation.trim()}
                   className="rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg transition hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
                 >
                   {editing ? '고친 대로 저장' : '밤하늘에 띄우기'}

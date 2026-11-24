@@ -28,7 +28,7 @@ export default function EmotionPartsPage() {
   const [ready, setReady] = useState(false);
 
   const filled = PARTS.filter((p) => parts[p.key].trim()).length;
-  const canNext = emotion.trim() && filled > 0;
+  const canNext = emotion.trim() && filled === PARTS.length;
 
   const finish = () => {
     const lines = [`감정: ${emotion.trim()}`, ...PARTS.filter((p) => parts[p.key].trim()).map((p) => `${p.label}: ${parts[p.key].trim()}`)];
@@ -65,7 +65,7 @@ export default function EmotionPartsPage() {
 
           <div>
             <h2 className="font-sans text-lg font-medium text-night-text">2. 생각 · 몸 · 행동으로 나눠 보자</h2>
-            <p className="mt-1 text-sm text-night-sub">감정은 한 덩어리 같지만, 사실 세 조각으로 이루어져 있어. 떠오르는 것만 적어도 돼.</p>
+            <p className="mt-1 text-sm text-night-sub">감정은 한 덩어리 같지만, 사실 세 조각으로 이루어져 있어. 세 조각 모두 한 줄씩 적어 봐.</p>
             <div className="mt-4 grid grid-cols-3 gap-[3%]">
               {PARTS.map((p) => (
                 <div key={p.key} className="rounded-2xl border border-night-line bg-night-card p-4">
@@ -99,7 +99,7 @@ export default function EmotionPartsPage() {
             회피 순환 보러 가기
             <ArrowRight aria-hidden="true" className="h-4 w-4" />
           </button>
-          {!canNext && <p className="text-xs text-night-sub">감정 하나와 조각 하나 이상을 적으면 다음으로 갈 수 있어.</p>}
+          {!canNext && <p className="text-xs text-night-sub">감정 이름과 생각·몸·행동 세 조각을 모두 적으면 다음으로 갈 수 있어 ({filled}/{PARTS.length}).</p>}
         </section>
       )}
 
