@@ -277,7 +277,8 @@ export default function AvoidanceGame({
   return (
     <div className="space-y-5">
       {/* 무대 */}
-      <div className="relative overflow-hidden rounded-3xl border border-night-line bg-gradient-to-b from-night-card to-night-bg">
+      {/* 휴대폰에서는 버튼이 무대 아래로 멀리 쌓이므로, 무대를 위쪽 바 밑에 붙여 늘 캐릭터가 보이게 한다 */}
+      <div className="sticky top-[3.6rem] z-20 overflow-hidden rounded-3xl border border-night-line bg-gradient-to-b from-night-card to-night-bg md:relative md:top-auto md:z-auto">
         <div className="absolute left-4 top-4 z-10">
           <p className="text-xs text-night-sub">크기 기록</p>
           <div className="mt-1 flex h-10 items-end gap-1" aria-hidden="true">
@@ -296,7 +297,7 @@ export default function AvoidanceGame({
         </p>
 
         {/* 말풍선 */}
-        <div className="pointer-events-none absolute inset-x-0 top-16 z-10 flex justify-center px-4" aria-hidden="true">
+        <div className="pointer-events-none absolute inset-x-0 top-12 z-10 flex justify-center px-4 md:top-16" aria-hidden="true">
           <div
             key={speech}
             className="relative max-w-[70%] rounded-2xl bg-[#FFF6E8] px-4 py-2 text-center text-base font-medium text-[#2A1B3D] shadow-lg motion-safe:animate-[fadein_0.35s_ease-out]"
@@ -306,12 +307,12 @@ export default function AvoidanceGame({
           </div>
         </div>
 
-        <div className="flex h-[420px] items-center justify-center pt-24" role="img" aria-label={`감정 "${emotion}" 크기 ${pct}%`}>
+        <div className="flex h-[260px] items-center justify-center pt-14 md:h-[420px] md:pt-24" role="img" aria-label={`감정 "${emotion}" 크기 ${pct}%`}>
           <div
             className="flex flex-col items-center motion-safe:transition-transform motion-safe:duration-700"
             style={{ transform: `scale(${size})`, transitionTimingFunction: 'cubic-bezier(.34,1.56,.64,1)' }}
           >
-            <div className={`h-28 w-28 ${shaking ? 'blob-wobble' : 'blob-idle'}`}>
+            <div className={`h-[4.5rem] w-[4.5rem] md:h-28 md:w-28 ${shaking ? 'blob-wobble' : 'blob-idle'}`}>
               <EmotionBlob mood={mood} color={blobColor(size)} />
             </div>
           </div>
@@ -388,7 +389,7 @@ export default function AvoidanceGame({
             className={`relative mt-2 flex flex-1 select-none items-center justify-center gap-2 overflow-hidden rounded-2xl border-2 border-[#7FD6C2] px-6 py-5 text-lg text-night-text transition disabled:cursor-not-allowed disabled:opacity-50 ${
               holdingNow ? 'scale-[0.98]' : 'hover:bg-[#7FD6C2]/10'
             }`}
-            style={{ ['--focus-color' as string]: '#7FD6C2', touchAction: 'none', WebkitUserSelect: 'none' }}
+            style={{ ['--focus-color' as string]: '#7FD6C2', touchAction: 'none', WebkitUserSelect: 'none', WebkitTouchCallout: 'none' }}
           >
             {/* 버티기 게이지 */}
             <span aria-hidden="true" className="absolute inset-y-0 left-0 bg-[#7FD6C2]/30" style={{ width: `${holdP * 100}%` }} />
