@@ -1,8 +1,60 @@
-import type { DB } from '../types';
+import type { Account, DB, Student } from '../types';
 import { createSeedData, DEMO_COUNSELOR_ID, DEMO_INVITE_CODE, DEMO_STUDENT_IDS } from './seed';
 import { makeInviteCode } from '../lib/auth';
 
-const isDemoStudent = (id: string) => DEMO_STUDENT_IDS.includes(id);
+/** "처음 시작 체험"용 예시 학생: 동의서·사전 검사부터 보여주려고 누를 때마다 새로 만든다 */
+export const FRESH_STUDENT_ID = 'stu-new';
+export const FRESH_ACCOUNT_ID = 'acc-student-new';
+
+const isDemoStudent = (id: string) => DEMO_STUDENT_IDS.includes(id) || id === FRESH_STUDENT_ID;
+
+/** 처음 시작 체험 학생을 기록 없는 새 상태로 만든다 (동의 전, 사전 검사 전, 1회기) */
+export function resetFreshStudent(db: DB): { db: DB; account: Account } {
+  const now = new Date().toISOString();
+  const mine = (x: { studentId: string }) => x.studentId !== FRESH_STUDENT_ID;
+  const checkIns = db.checkIns.filter(mine);
+  const kept = new Set(checkIns.map((c) => c.id));
+  const account: Account = {
+    id: FRESH_ACCOUNT_ID,
+    username: 'student-new',
+    // 비밀번호로는 들어갈 수 없는 체험 전용 계정
+    passwordHash: '-',
+    role: 'student',
+    displayName: '처음 학생',
+    studentId: FRESH_STUDENT_ID,
+    createdAt: now,
+    demo: true,
+  };
+  const student: Student = {
+    id: FRESH_STUDENT_ID,
+    name: '처음 학생',
+    currentSession: 1,
+    sessionStartedAt: now,
+    nextSessionDate: null,
+    mode: '회기중',
+    joinedAt: now,
+    counselorId: DEMO_COUNSELOR_ID,
+    heartExperimentOff: false,
+  };
+  return {
+    account,
+    db: {
+      ...db,
+      accounts: [...db.accounts.filter((a) => a.id !== FRESH_ACCOUNT_ID), account],
+      students: [...db.students.filter((s) => s.id !== FRESH_STUDENT_ID), student],
+      checkIns,
+      strategyUses: db.strategyUses.filter((u) => kept.has(u.checkInId)),
+      meteorSessions: db.meteorSessions.filter(mine),
+      missionProgress: db.missionProgress.filter(mine),
+      challenges: db.challenges.filter(mine),
+      trustedContacts: db.trustedContacts.filter(mine),
+      consents: db.consents.filter(mine),
+      assessments: db.assessments.filter(mine),
+      letters: db.letters.filter(mine),
+      crisisAlerts: db.crisisAlerts.filter(mine),
+    },
+  };
+}
 
 /** 예시 계정·학생·기록만 지운다. 직접 가입한 계정과 그 기록은 그대로 */
 export function removeDemoData(db: DB): DB {

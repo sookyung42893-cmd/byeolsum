@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import type { Account, DB, Session, Student } from '../types';
 import { loadDb, loadSession, resetAllData, saveDb, saveSession } from '../data/storage';
-import { removeDemoData, restoreDemoData } from '../data/demo';
+import { removeDemoData, resetFreshStudent, restoreDemoData } from '../data/demo';
 import { DEMO_INVITE_CODE } from '../data/seed';
 import { syncCrisisAlerts } from '../lib/crisis';
 import {
@@ -26,6 +26,8 @@ interface AppContextValue {
   /** 예시 계정으로 비밀번호 없이 들어가기 */
   enterAs: (account: Account) => void;
   logOut: () => void;
+  /** 처음 시작 체험: 기록 없는 새 학생으로 들어가 동의서·사전 검사부터 본다 (누를 때마다 새로) */
+  startFresh: () => void;
   /** 예시 데이터를 처음 상태로 (직접 가입한 계정은 유지) */
   restoreDemo: () => void;
   /** 예시 데이터만 지우기 (직접 가입한 계정은 유지) */
@@ -112,6 +114,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const enterAs = useCallback((account: Account) => setSession(sessionFor(account)), [setSession]);
   const logOut = useCallback(() => setSession(null), [setSession]);
 
+  const startFresh = useCallback(() => {
+    const { db: next, account } = resetFreshStudent(db);
+    setDb(next);
+    setSession(sessionFor(account));
+  }, [db, setSession]);
+
   const restoreDemo = useCallback(() => {
     setDb((prev) => restoreDemoData(prev));
     setSession(null);
@@ -128,8 +136,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const value = useMemo(
-    () => ({ db, updateDb, session, signUp, logIn, enterAs, logOut, restoreDemo, removeDemo, resetAll }),
-    [db, updateDb, session, signUp, logIn, enterAs, logOut, restoreDemo, removeDemo, resetAll],
+    () => ({ db, updateDb, session, signUp, logIn, enterAs, logOut, startFresh, restoreDemo, removeDemo, resetAll }),
+    [db, updateDb, session, signUp, logIn, enterAs, logOut, startFresh, restoreDemo, removeDemo, resetAll],
   );
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;
 }

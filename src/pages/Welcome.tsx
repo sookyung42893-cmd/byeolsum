@@ -1,11 +1,12 @@
 import { useId, useState, type FormEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { RotateCcw, Telescope, Trash2, User } from 'lucide-react';
+import { RotateCcw, Sparkles, Telescope, Trash2, User } from 'lucide-react';
 import { useApp } from '../context/AppContext';
 import StarField from '../components/StarField';
 import Logo from '../components/Logo';
 import { askConfirm } from '../lib/confirm';
 import { DEMO_INVITE_CODE, DEMO_PASSWORD } from '../data/seed';
+import { FRESH_ACCOUNT_ID } from '../data/demo';
 import { PASSWORD_RULE, USERNAME_RULE, type SignUpErrors, type SignUpInput } from '../lib/auth';
 import type { Account, Role } from '../types';
 
@@ -181,7 +182,7 @@ function LogInForm({ onDone }: { onDone: (a: Account) => void }) {
 }
 
 export default function Welcome() {
-  const { db, enterAs, restoreDemo, removeDemo } = useApp();
+  const { db, enterAs, startFresh, restoreDemo, removeDemo } = useApp();
   const navigate = useNavigate();
   const [tab, setTab] = useState<Tab>('signup');
 
@@ -190,7 +191,7 @@ export default function Welcome() {
   const demoAccounts = db.accounts.filter((a) => a.demo);
   const demoCounselor = demoAccounts.find((a) => a.role === 'counselor');
   const demoStudents = demoAccounts
-    .filter((a) => a.role === 'student')
+    .filter((a) => a.role === 'student' && a.id !== FRESH_ACCOUNT_ID)
     .map((account) => ({ account, student: db.students.find((s) => s.id === account.studentId) }));
 
   const handleRestore = () => {
@@ -276,6 +277,21 @@ export default function Welcome() {
                 </div>
               </fieldset>
             )}
+
+            <button
+              type="button"
+              onClick={() => {
+                startFresh();
+                navigate('/student/sky');
+              }}
+              className="mt-3 flex w-full items-center gap-3 rounded-2xl border border-dashed border-night-line bg-night-card px-5 py-4 text-left transition hover:border-night-star"
+            >
+              <Sparkles aria-hidden="true" className="h-6 w-6 shrink-0 text-night-star" />
+              <span>
+                <span className="block font-medium text-night-text">처음 시작하는 학생으로 체험</span>
+                <span className="block text-xs text-night-sub">동의서 → 사전 검사(DERS) → 첫 밤하늘까지, 학생이 처음 보는 화면 그대로. 누를 때마다 새로 시작해요</span>
+              </span>
+            </button>
 
             <p className="mt-4 text-xs leading-relaxed text-night-sub">
               로그인 탭으로 예시 계정에 들어갈 때 비밀번호는 {DEMO_PASSWORD} 예요. 예시 상담사의 초대 코드는{' '}
