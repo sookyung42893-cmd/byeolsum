@@ -18,7 +18,7 @@ import {
 } from '../types';
 import { findBroad } from './emotions';
 import { BODY_MAP_PLANET, COUNSELOR_NAME, MISSIONS, TOTAL_SESSIONS, sessionOfPlanet } from './planets';
-import { ASSESSMENT_CONFIG, ASSESSMENT_ITEM_COUNT } from './assessment';
+import { ASSESSMENT_CONFIG, ASSESSMENT_ITEM_COUNT, isReverseItem } from './assessment';
 import { syncCrisisAlerts } from '../lib/crisis';
 import { DAY, HOUR, MINUTE, startOfDay, toDateKey } from '../lib/dates';
 
@@ -100,7 +100,7 @@ interface Profile {
   challenges: SeedChallenge[];
   contacts: { name: string; relation: string }[];
   guardianConsent: boolean;
-  /** 사전·사후 척도 평균 경향 (1~5) */
+  /** 사전·사후 DERS 응답 경향: 정서조절 곤란 정도 (0~4, 높을수록 어려움) */
   assessment: { pre: number; post?: number };
   letters: { offset: number; content: string }[];
 }
@@ -221,7 +221,7 @@ const PROFILES: Profile[] = [
       { name: '민지', relation: '친구' },
     ],
     guardianConsent: true,
-    assessment: { pre: 2.4 },
+    assessment: { pre: 2.2 },
     letters: [{ offset: 6, content: '지금 화나 있다면, 그때도 결국 지나갔다는 걸 기억해. 넌 생각보다 잘 버티는 사람이야. 노래 한 곡 듣고 다시 생각해보자.' }],
   },
   {
@@ -323,7 +323,7 @@ const PROFILES: Profile[] = [
       { name: '박서윤 선생님', relation: '담임 선생님' },
     ],
     guardianConsent: true,
-    assessment: { pre: 2.8, post: 3.9 },
+    assessment: { pre: 2.4, post: 1.2 },
     letters: [
       { offset: 6, content: '요즘의 나는 꽤 괜찮아. 혹시 다시 불안해지면, 발표 끝나고 홀가분했던 그 저녁을 떠올려줘.' },
     ],
@@ -390,7 +390,7 @@ const PROFILES: Profile[] = [
     ],
     contacts: [{ name: '정 선생님', relation: '학원 선생님' }],
     guardianConsent: true,
-    assessment: { pre: 2.1 },
+    assessment: { pre: 2.9 },
     letters: [],
   },
   {
@@ -432,7 +432,7 @@ const PROFILES: Profile[] = [
     ],
     contacts: [],
     guardianConsent: false,
-    assessment: { pre: 2.6 },
+    assessment: { pre: 2.5 },
     letters: [],
   },
 ];
@@ -578,10 +578,12 @@ function generateStudent(p: Profile, now: number) {
   };
 
   // 척도 응답: 평균 경향 근처에서 문항마다 조금씩 흔들리게
-  const answer = (mean: number) =>
-    Array.from({ length: ASSESSMENT_ITEM_COUNT }, () =>
-      clamp(Math.round(mean + (rng() - 0.5) * 2), ASSESSMENT_CONFIG.scaleMin, ASSESSMENT_CONFIG.scaleMax),
-    );
+  // DERS 응답: 곤란 정도 근처에서 문항마다 조금씩 흔들리고, 역채점 문항은 반대로 답한다
+  const answer = (difficulty: number) =>
+    Array.from({ length: ASSESSMENT_ITEM_COUNT }, (_, i) => {
+      const level = clamp(Math.round(difficulty + (rng() - 0.5) * 2), ASSESSMENT_CONFIG.scaleMin, ASSESSMENT_CONFIG.scaleMax);
+      return isReverseItem(i) ? ASSESSMENT_CONFIG.scaleMax + ASSESSMENT_CONFIG.scaleMin - level : level;
+    });
   const assessments: Assessment[] = [
     { id: `${p.id}-as-pre`, studentId: p.id, timing: '사전', scores: answer(p.assessment.pre), takenAt: consent.agreedAt },
   ];

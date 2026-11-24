@@ -108,7 +108,7 @@ export function ConsentPage() {
 export function AssessmentForm({ timing, onDone }: { timing: AssessmentTiming; onDone?: () => void }) {
   const { updateDb } = useApp();
   const student = useCurrentStudent()!;
-  const { items, scaleMin, scaleMax, scaleLabels, name } = ASSESSMENT_CONFIG;
+  const { items, scaleMin, scaleMax, scaleLabels, name, instruction } = ASSESSMENT_CONFIG;
   const [answers, setAnswers] = useState<(number | null)[]>(() => items.map(() => null));
   const answered = answers.filter((a) => a !== null).length;
   const values = Array.from({ length: scaleMax - scaleMin + 1 }, (_, i) => scaleMin + i);
@@ -129,7 +129,7 @@ export function AssessmentForm({ timing, onDone }: { timing: AssessmentTiming; o
       className="space-y-4"
     >
       <p className="text-sm text-night-sub">
-        {name} · {items.length}문항 · 정답은 없어. 요즘의 나와 가까운 곳을 골라 줘. 상담 선생님이 볼 수 있는 기록이야.
+        {name} · {items.length}문항 · {instruction} 정답은 없어. 상담 선생님이 볼 수 있는 기록이야.
       </p>
       <ol className="space-y-3">
         {items.map((item, i) => (

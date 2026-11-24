@@ -240,7 +240,7 @@ export interface Letter {
 }
 
 /** 저장 형식 버전. 바뀌면 저장된 데이터를 모두 지우고 새 예시 데이터로 채운다 (6: 8회기 · 정거장 7곳) */
-export const DB_VERSION = 8;
+export const DB_VERSION = 9;
 
 export interface DB {
   version: typeof DB_VERSION;
