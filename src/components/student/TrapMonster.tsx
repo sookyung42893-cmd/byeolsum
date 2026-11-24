@@ -11,14 +11,16 @@ export interface TrapInfo {
   desc: string;
   /** 잡혔을 때 하는 말 */
   caught: string;
+  /** 소개 화면에 보여줄 예시 생각 (사냥 문제와 겹치지 않게) */
+  example: string;
 }
 
 export const TRAP_INFO: TrapInfo[] = [
-  { name: '결론 건너뛰기', monster: '폴짝이', color: '#8FE3A0', desc: '확인도 하기 전에 결론으로 폴짝 뛰어 버려.', caught: '들켰다! 난 확인도 안 하고 결론으로 폴짝 뛰어 버려.' },
-  { name: '최악 상상하기', monster: '먹구름이', color: '#A9B2D9', desc: '일어날 수 있는 가장 나쁜 일만 떠올려.', caught: '우르릉… 난 제일 나쁜 일만 비처럼 쏟아 내지.' },
-  { name: '마음 읽기', monster: '독심냥', color: '#C9A7FF', desc: '다른 사람 속마음을 안다고 믿어 버려.', caught: '냐옹, 난 남의 속마음을 다 안다고 우기지.' },
-  { name: '전부 아니면 전무', monster: '반반이', color: '#E8E8F2', desc: '완벽하지 않으면 다 실패라고 봐.', caught: '100 아니면 0! 중간은 없어! …사실 중간이 훨씬 많지만.' },
-  { name: '꼬리표 붙이기', monster: '딱지', color: '#FFD56B', desc: '한 번의 일로 나를 "원래 그런 사람"이라고 정해.', caught: '찰싹! 한 번 일어난 일로 꼬리표 붙이는 게 내 특기야.' },
+  { name: '결론 건너뛰기', monster: '폴짝이', color: '#8FE3A0', desc: '확인도 하기 전에 결론으로 폴짝 뛰어 버려.', caught: '들켰다! 난 확인도 안 하고 결론으로 폴짝 뛰어 버려.', example: '선생님이 날 불렀어. 분명 혼나는 거야.' },
+  { name: '최악 상상하기', monster: '먹구름이', color: '#A9B2D9', desc: '일어날 수 있는 가장 나쁜 일만 떠올려.', caught: '우르릉… 난 제일 나쁜 일만 비처럼 쏟아 내지.', example: '이번 시험 망치면 내 인생은 끝이야.' },
+  { name: '마음 읽기', monster: '독심냥', color: '#C9A7FF', desc: '다른 사람 속마음을 안다고 믿어 버려.', caught: '냐옹, 난 남의 속마음을 다 안다고 우기지.', example: '다들 속으로 내가 이상하다고 생각할 거야.' },
+  { name: '전부 아니면 전무', monster: '반반이', color: '#E8E8F2', desc: '완벽하지 않으면 다 실패라고 봐.', caught: '100 아니면 0! 중간은 없어! …사실 중간이 훨씬 많지만.', example: '한 번 지각했으니 이번 학기는 완전 망했어.' },
+  { name: '꼬리표 붙이기', monster: '딱지', color: '#FFD56B', desc: '한 번의 일로 나를 "원래 그런 사람"이라고 정해.', caught: '찰싹! 한 번 일어난 일로 꼬리표 붙이는 게 내 특기야.', example: '체육 시간에 공을 놓쳤어. 난 원래 운동 못하는 애야.' },
 ];
 
 export const trapInfo = (name: TrapName) => TRAP_INFO.find((t) => t.name === name)!;

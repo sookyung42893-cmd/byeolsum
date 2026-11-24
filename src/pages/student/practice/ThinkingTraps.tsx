@@ -80,6 +80,188 @@ const LENS_FEEDBACK: Record<LensKind, string> = {
 
 type Stage = 'find' | 'caught' | 'lens' | 'clear';
 
+/** 소개 1장: 같은 상황이라도 생각에 따라 감정이 달라진다 */
+const SAME_SITUATION = {
+  situation: '복도에서 친구한테 인사했는데, 친구가 그냥 지나갔어.',
+  thoughts: [
+    { text: '나를 일부러 무시했어.', feeling: '서운하고 화가 나', face: '😠', color: '#FF8E72' },
+    { text: '이어폰 끼고 있어서 못 봤나 봐.', feeling: '그냥 괜찮아', face: '🙂', color: '#7FD6C2' },
+  ],
+};
+
+const INTRO_STEPS = ['생각이 감정을 바꿔', '생각 함정 = 몬스터', '렌즈로 다시 보는 법'];
+
+/** 사냥 전에 기법을 알려주는 소개 (3장) */
+function TrapIntro({ onStart }: { onStart: () => void }) {
+  const [step, setStep] = useState(0);
+  const [seen, setSeen] = useState<number[]>([]);
+  const last = step === INTRO_STEPS.length - 1;
+
+  return (
+    <section aria-labelledby="intro-title" className="space-y-5">
+      {/* 진행 점 */}
+      <ol className="flex items-center gap-2" aria-label="소개 진행">
+        {INTRO_STEPS.map((s, i) => (
+          <li key={s} className="flex items-center gap-2">
+            <span
+              aria-current={i === step ? 'step' : undefined}
+              className={`flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold ${
+                i === step ? 'bg-night-star text-night-bg' : i < step ? 'bg-night-star/30 text-night-text' : 'bg-night-line text-night-sub'
+              }`}
+            >
+              {i + 1}
+            </span>
+            <span className={`hidden text-sm sm:inline ${i === step ? 'text-night-text' : 'text-night-sub'}`}>{s}</span>
+            {i < INTRO_STEPS.length - 1 && <span aria-hidden="true" className="h-px w-6 bg-night-line" />}
+          </li>
+        ))}
+      </ol>
+
+      <div key={step} className="rounded-3xl border border-night-line bg-night-card p-6 motion-safe:animate-[fadein_0.4s_ease-out]">
+        {step === 0 && (
+          <>
+            <h2 id="intro-title" className="text-2xl text-night-text">
+              생각이 감정을 바꿔
+            </h2>
+            <p className="mt-2 leading-relaxed text-night-sub">
+              어떤 일이 생기면 머릿속에 생각이 <strong className="font-medium text-night-text">자동으로</strong> 휙 떠올라. 그리고 감정은 일 자체보다 그
+              생각을 따라가. 아래 두 생각을 하나씩 눌러 봐.
+            </p>
+            <div className="mt-5 rounded-2xl bg-night-bg/60 p-4">
+              <p className="text-xs text-night-sub">상황</p>
+              <p className="mt-0.5 text-lg text-night-text">{SAME_SITUATION.situation}</p>
+            </div>
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              {SAME_SITUATION.thoughts.map((t, i) => {
+                const open = seen.includes(i);
+                return (
+                  <button
+                    key={t.text}
+                    type="button"
+                    aria-expanded={open}
+                    onClick={() => setSeen((s) => (s.includes(i) ? s : [...s, i]))}
+                    className="rounded-2xl border-2 p-4 text-left transition motion-safe:hover:-translate-y-0.5"
+                    style={{ borderColor: open ? t.color : '#222A55', backgroundColor: open ? `${t.color}14` : 'transparent', ['--focus-color' as string]: t.color }}
+                  >
+                    <p className="text-xs text-night-sub">이렇게 생각하면</p>
+                    <p className="mt-0.5 text-night-text">"{t.text}"</p>
+                    <p className="mt-3 flex items-center gap-2 text-night-text" aria-live="polite">
+                      {open ? (
+                        <>
+                          <span aria-hidden="true" className="text-3xl motion-safe:animate-[pop-in_0.4s_ease-out]">
+                            {t.face}
+                          </span>
+                          기분: {t.feeling}
+                        </>
+                      ) : (
+                        <span className="text-sm text-night-sub">눌러서 기분 보기</span>
+                      )}
+                    </p>
+                  </button>
+                );
+              })}
+            </div>
+            {seen.length === 2 && (
+              <p className="mt-4 rounded-2xl bg-night-star/10 px-4 py-3 leading-relaxed text-night-text motion-safe:animate-[fadein_0.4s_ease-out]">
+                똑같은 일인데 생각에 따라 기분이 완전히 달라지지? 그런데 처음 떠오르는 생각은 빠른 대신, 자주 한쪽으로 치우쳐.
+              </p>
+            )}
+          </>
+        )}
+
+        {step === 1 && (
+          <>
+            <h2 id="intro-title" className="text-2xl text-night-text">
+              생각 함정 = 몬스터
+            </h2>
+            <p className="mt-2 leading-relaxed text-night-sub">
+              우리가 자주 빠지는 치우친 생각 패턴을 <strong className="font-medium text-night-text">생각 함정</strong>이라고 해. 함정에 빠지면 감정이 실제보다 훨씬
+              커져. 누구 머릿속에나 사는 다섯 몬스터를 소개할게.
+            </p>
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+              {TRAP_INFO.map((t) => (
+                <li key={t.name} className="flex gap-3 rounded-2xl border p-3" style={{ borderColor: `${t.color}66`, backgroundColor: `${t.color}0F` }}>
+                  <span className="h-14 w-14 shrink-0">
+                    <TrapMonster name={t.name} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-medium text-night-text">
+                      {t.monster} <span className="text-sm font-normal text-night-sub">· {t.name}</span>
+                    </span>
+                    <span className="mt-0.5 block text-sm leading-relaxed text-night-sub">{t.desc}</span>
+                    <span className="mt-1 block text-sm italic text-night-text">"{t.example}"</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+
+        {step === 2 && (
+          <>
+            <h2 id="intro-title" className="text-2xl text-night-text">
+              렌즈로 다시 보는 법
+            </h2>
+            <p className="mt-2 leading-relaxed text-night-sub">몬스터를 없앨 수는 없지만, 들키면 힘이 쭉 빠져. 세 단계만 기억해.</p>
+            <ol className="mt-5 space-y-3">
+              {[
+                { t: '몬스터 이름 부르기', d: '"아, 지금 폴짝이가 나왔네." 이름만 붙여도 생각과 거리가 생겨.' },
+                { t: '탐정 질문 던지기', d: '진짜 증거가 있어? 다른 설명은 없을까? 친구가 이런 생각을 하면 뭐라고 말해 줄까?' },
+                { t: '사실에 가까운 생각 고르기', d: '함정에 빠진 생각 대신, 증거에 맞는 생각을 찾아.' },
+              ].map((s, i) => (
+                <li key={s.t} className="flex gap-3">
+                  <span aria-hidden="true" className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#B9C2FF] text-sm font-semibold text-night-bg">
+                    {i + 1}
+                  </span>
+                  <span>
+                    <span className="block font-medium text-night-text">{s.t}</span>
+                    <span className="mt-0.5 block text-sm leading-relaxed text-night-sub">{s.d}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+            <div className="mt-5 rounded-2xl border border-[#FF8E72]/50 bg-[#FF8E72]/10 p-4">
+              <p className="font-medium text-night-text">주의! 무조건 긍정은 정답이 아니야</p>
+              <p className="mt-1 text-sm leading-relaxed text-night-sub">
+                "난 신경 하나도 안 써", "다 잘될 거야"처럼 억지로 밝게 바꾼 생각은 오래 못 가. 목표는 좋은 생각이 아니라 <strong className="font-medium text-night-text">사실에 가까운 생각</strong>이야.
+              </p>
+            </div>
+          </>
+        )}
+      </div>
+
+      <div className="flex items-center gap-3">
+        {step > 0 && (
+          <button type="button" onClick={() => setStep(step - 1)} className="rounded-xl px-4 py-2.5 text-night-sub hover:text-night-text">
+            이전
+          </button>
+        )}
+        {last ? (
+          <button
+            type="button"
+            onClick={onStart}
+            className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
+          >
+            <Telescope aria-hidden="true" className="h-4 w-4" />
+            몬스터 사냥 시작!
+          </button>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setStep(step + 1)}
+            disabled={step === 0 && seen.length < 2}
+            className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
+          >
+            다음
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </button>
+        )}
+        {step === 0 && seen.length < 2 && <span className="text-sm text-night-sub">두 생각을 모두 눌러 보면 다음으로 갈 수 있어.</span>}
+      </div>
+    </section>
+  );
+}
+
 export default function ThinkingTrapsPage() {
   const { db } = useApp();
   const student = useCurrentStudent()!;
@@ -99,6 +281,7 @@ export default function ThinkingTrapsPage() {
   const [ownId, setOwnId] = useState<string | null>(null);
   const [ownTrap, setOwnTrap] = useState<TrapName | null>(null);
   const [done, setDone] = useState(false);
+  const [started, setStarted] = useState(false);
 
   const r = ROUNDS[round];
   const own = recent.find((c) => c.id === ownId);
@@ -156,6 +339,19 @@ export default function ThinkingTrapsPage() {
     );
   }
 
+  if (!started) {
+    return (
+      <PracticeShell missionId={MISSION}>
+        <TrapIntro
+          onStart={() => {
+            setStarted(true);
+            window.scrollTo({ top: 0 });
+          }}
+        />
+      </PracticeShell>
+    );
+  }
+
   return (
     <PracticeShell missionId={MISSION}>
       {/* 몬스터 도감 */}
@@ -165,6 +361,9 @@ export default function ThinkingTrapsPage() {
             함정 몬스터 도감
           </h2>
           <p className="text-sm tabular-nums text-night-sub">
+            <button type="button" onClick={() => setStarted(false)} className="mr-3 text-night-star underline-offset-4 hover:underline">
+              설명 다시 보기
+            </button>
             {caught.length} / {TRAP_INFO.length} 잡음
           </p>
         </div>
