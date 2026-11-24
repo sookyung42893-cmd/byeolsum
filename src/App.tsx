@@ -19,7 +19,6 @@ import BodyScanPage from './pages/student/practice/BodyScan';
 import ThinkingTrapsPage from './pages/student/practice/ThinkingTraps';
 import VoyageManualPage from './pages/student/practice/VoyageManual';
 import VoyageMapPage from './pages/student/VoyageMap';
-import DevResetButton from './components/DevResetButton';
 import ConfirmHost from './components/ConfirmHost';
 
 /**
@@ -62,7 +61,6 @@ export default function App() {
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
-        <DevResetButton />
         <ConfirmHost />
       </Router>
     </AppProvider>
