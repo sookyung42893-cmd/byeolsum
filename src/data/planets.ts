@@ -126,7 +126,7 @@ export const MISSIONS: Mission[] = [
     planetId: 2,
     kind: '연습',
     title: '감정 분해기',
-    description: '감정 하나를 생각·몸·행동으로 나눠 보고, 피할수록 커지는 회피 순환을 그림으로 봐.',
+    description: '감정 하나를 생각·몸·행동으로 나눠 보고, 피하면 어떻게 되는지 직접 실험해 봐.',
     to: '/student/practice/emotion-parts',
   },
   {

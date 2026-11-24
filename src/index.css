@@ -299,3 +299,38 @@
     transform: translate(var(--dx), var(--dy)) rotate(var(--angle)) scaleX(1);
   }
 }
+
+/* 감정 키우기 실험: 감정 캐릭터 숨쉬기 · 다가갈 때 떨림 */
+.blob-idle {
+  animation: blob-idle 3.2s ease-in-out infinite;
+}
+@keyframes blob-idle {
+  0%,
+  100% {
+    transform: translateY(0) scale(1, 1);
+  }
+  50% {
+    transform: translateY(-6px) scale(1.03, 0.97);
+  }
+}
+.blob-wobble {
+  animation: blob-wobble 0.32s ease-in-out infinite;
+}
+@keyframes blob-wobble {
+  0%,
+  100% {
+    transform: rotate(0deg) translateX(0);
+  }
+  25% {
+    transform: rotate(-7deg) translateX(-4px);
+  }
+  75% {
+    transform: rotate(7deg) translateX(4px);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .blob-idle,
+  .blob-wobble {
+    animation: none;
+  }
+}
