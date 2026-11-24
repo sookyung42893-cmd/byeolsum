@@ -80,6 +80,16 @@ const LENS_FEEDBACK: Record<LensKind, string> = {
 
 type Stage = 'find' | 'caught' | 'lens' | 'clear';
 
+/** 순서 섞기 (답이 버튼 순서와 맞아떨어지지 않게) */
+function shuffle<T>(list: readonly T[]): T[] {
+  const a = [...list];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
 /** 소개 1장: 같은 상황이라도 생각에 따라 감정이 달라진다 */
 const SAME_SITUATION = {
   situation: '복도에서 친구한테 인사했는데, 친구가 그냥 지나갔어.',
@@ -272,6 +282,9 @@ export default function ThinkingTrapsPage() {
     .filter((c) => c.situation.trim())
     .slice(0, 5);
 
+  // 할 때마다 문제 순서 · 렌즈 보기 순서 · 외계인 버튼 순서를 섞는다
+  const [rounds] = useState(() => shuffle(ROUNDS).map((q) => ({ ...q, lenses: shuffle(q.lenses) })));
+  const [choices, setChoices] = useState(() => shuffle(TRAP_INFO));
   const [round, setRound] = useState(0);
   const [stage, setStage] = useState<Stage>('find');
   const [guess, setGuess] = useState<TrapName | null>(null);
@@ -284,7 +297,7 @@ export default function ThinkingTrapsPage() {
   const [done, setDone] = useState(false);
   const [started, setStarted] = useState(false);
 
-  const r = ROUNDS[round];
+  const r = rounds[round];
   const own = recent.find((c) => c.id === ownId);
   const answerInfo = trapInfo(r.answer);
   const lensKind = lensPick !== null ? r.lenses[lensPick].kind : null;
@@ -304,18 +317,19 @@ export default function ThinkingTrapsPage() {
   };
 
   const nextRound = () => {
-    if (round + 1 >= ROUNDS.length) {
+    if (round + 1 >= rounds.length) {
       setHuntDone(true);
       return;
     }
     setRound(round + 1);
+    setChoices(shuffle(TRAP_INFO));
     setStage('find');
     setGuess(null);
     setLensPick(null);
   };
 
   const finish = () => {
-    const matched = ROUNDS.filter((q, i) => firstGuesses[i] === q.answer).length;
+    const matched = rounds.filter((q, i) => firstGuesses[i] === q.answer).length;
     const lines = [`함정 외계인 ${caught.length}명 붙잡음 (처음에 바로 찾은 것 ${matched}개)`];
     if (own && ownTrap) lines.push(`내 생각에서: "${own.situation}" → ${ownTrap} (${trapInfo(ownTrap).alien})`);
     complete(lines.join('\n'));
@@ -395,7 +409,7 @@ export default function ThinkingTrapsPage() {
               {stage === 'find' ? '거울 속 생각에 숨은 외계인을 찾아 봐' : stage === 'clear' ? '거울이 맑아졌어' : '렌즈로 다시 보기'}
             </h2>
             <p className="text-sm tabular-nums text-night-sub">
-              거울 {round + 1} / {ROUNDS.length}
+              거울 {round + 1} / {rounds.length}
             </p>
           </div>
 
@@ -478,7 +492,7 @@ export default function ThinkingTrapsPage() {
           {/* 단계별 조작 */}
           {stage === 'find' && (
             <div role="group" aria-label="숨은 외계인 고르기" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-              {TRAP_INFO.map((t) => (
+              {choices.map((t) => (
                 <button
                   key={t.name}
                   type="button"
@@ -545,7 +559,7 @@ export default function ThinkingTrapsPage() {
               onClick={nextRound}
               className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
             >
-              {round + 1 >= ROUNDS.length ? '붙잡기 끝내기' : '다음 거울로'}
+              {round + 1 >= rounds.length ? '붙잡기 끝내기' : '다음 거울로'}
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           )}
