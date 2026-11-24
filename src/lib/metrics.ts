@@ -147,6 +147,20 @@ const BUCKETS = [
   { name: '밤(21~24시)', from: 21, to: 24 },
 ];
 
+/** 강도 높은 순간이 한 시간대에 몰렸으면 그 시간대 이름 (3번 이상, 절반 이상일 때만) */
+export function peakTimeBucket(moments: CheckIn[]): string | null {
+  const n = moments.length;
+  if (n < 3) return null;
+  const top = BUCKETS.map((b) => ({
+    name: b.name,
+    count: moments.filter((c) => {
+      const h = new Date(c.timestamp).getHours();
+      return h >= b.from && h < b.to;
+    }).length,
+  })).sort((a, b) => b.count - a.count)[0];
+  return top.count / n >= 0.5 ? top.name : null;
+}
+
 /** 강도 높은 순간들의 시간대 패턴을 한 줄로 */
 export function timePatternSummary(moments: CheckIn[]): string {
   const n = moments.length;

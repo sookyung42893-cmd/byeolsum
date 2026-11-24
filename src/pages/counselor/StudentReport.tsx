@@ -1,5 +1,8 @@
+import { useEffect, useState } from 'react';
 import { Navigate, useParams } from 'react-router-dom';
-import { Clock } from 'lucide-react';
+import { ChevronDown, ChevronUp, Clock } from 'lucide-react';
+import { sessionSummary, type SummaryTarget } from '../../lib/sessionSummary';
+import SessionSummary from './SessionSummary';
 import { useApp, useCurrentAccount } from '../../context/AppContext';
 import { checkInsInWeek, lastCheckIn } from '../../lib/selectors';
 import { studentBadges } from '../../lib/signals';
@@ -38,6 +41,16 @@ export default function StudentReport() {
   const { db } = useApp();
   const account = useCurrentAccount();
   const { studentId } = useParams();
+  // 요약 아래 전체 리포트는 기본으로 접어 둔다 (학생을 바꾸면 다시 접힘)
+  const [expanded, setExpanded] = useState(false);
+  const [scrollTo, setScrollTo] = useState<SummaryTarget | null>(null);
+  useEffect(() => setExpanded(false), [studentId]);
+  useEffect(() => {
+    if (!expanded || !scrollTo) return;
+    const el = document.getElementById(`report-${scrollTo}`) ?? document.getElementById('report-full');
+    el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    setScrollTo(null);
+  }, [expanded, scrollTo]);
   // 다른 상담사의 학생은 주소를 알아도 볼 수 없다
   const student = db.students.find((s) => s.id === studentId && s.counselorId === account?.id);
   if (!student) return <Navigate to="/observatory" replace />;
@@ -81,9 +94,32 @@ export default function StudentReport() {
         </p>
       </header>
 
-      <CrisisHistory student={student} />
+      <SessionSummary
+        lines={sessionSummary(db, student)}
+        onDetail={(target) => {
+          setExpanded(true);
+          setScrollTo(target);
+        }}
+      />
 
-      <section aria-labelledby="kpi-title">
+      <button
+        type="button"
+        aria-expanded={expanded}
+        aria-controls="report-full"
+        onClick={() => setExpanded((v) => !v)}
+        className="flex w-full items-center justify-center gap-2 rounded-xl border border-obs-line bg-obs-card px-4 py-3 text-sm font-medium text-obs-text hover:bg-obs-bg"
+      >
+        {expanded ? <ChevronUp aria-hidden="true" className="h-4 w-4" /> : <ChevronDown aria-hidden="true" className="h-4 w-4" />}
+        {expanded ? '전체 리포트 접기' : '전체 리포트 펼치기'}
+      </button>
+
+      {expanded && (
+      <div id="report-full" className="space-y-8">
+      <div id="report-crisis" className="scroll-mt-6">
+        <CrisisHistory student={student} />
+      </div>
+
+      <section id="report-kpi" aria-labelledby="kpi-title" className="scroll-mt-6">
         <h2 id="kpi-title" className="sr-only">
           핵심 지표
         </h2>
@@ -143,7 +179,7 @@ export default function StudentReport() {
         </div>
       </section>
 
-      <section aria-labelledby="moments-title" className="rounded-2xl border border-obs-line bg-obs-card p-6">
+      <section id="report-moments" aria-labelledby="moments-title" className="scroll-mt-6 rounded-2xl border border-obs-line bg-obs-card p-6">
         <h2 id="moments-title" className="font-sans text-base font-semibold">
           회기에서 다뤄볼 순간
         </h2>
@@ -180,11 +216,17 @@ export default function StudentReport() {
         )}
       </section>
 
-      <VoyagePanel student={student} />
+      <div id="report-voyage" className="scroll-mt-6">
+        <VoyagePanel student={student} />
+      </div>
 
-      <ChallengePanel student={student} />
+      <div id="report-challenge" className="scroll-mt-6">
+        <ChallengePanel student={student} />
+      </div>
 
       <AssessmentPanel student={student} />
+      </div>
+      )}
     </article>
   );
 }
