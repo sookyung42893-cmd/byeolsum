@@ -5,7 +5,7 @@ import { useApp, useCurrentStudent } from '../../../context/AppContext';
 import { checkInsOf } from '../../../lib/selectors';
 import { emotionLabel } from '../../../data/emotions';
 import Chip from '../../../components/Chip';
-import TrapMonster, { TRAP_INFO, trapInfo, type TrapName } from '../../../components/student/TrapMonster';
+import TrapAlien, { TRAP_INFO, trapInfo, type TrapName } from '../../../components/student/TrapAlien';
 import PracticeShell, { PracticeDone, usePracticeComplete } from './PracticeShell';
 
 const MISSION = 'p4-practice';
@@ -20,9 +20,9 @@ interface Round {
 }
 
 /**
- * 함정 몬스터 사냥: 거울에 비친 생각 속에 숨은 몬스터(생각 함정)를 찾아 잡고,
+ * 함정 외계인 붙잡기: 거울에 비친 생각 속에 숨은 외계인(생각 함정)을 찾아 붙잡고,
  * 렌즈로 다시 본 생각(균형 잡힌 생각)을 골라 거울을 맑게 만든다.
- * 틀려도 벌칙은 없고, 정답 몬스터를 보여주며 함께 잡는다.
+ * 틀려도 벌칙은 없고, 진짜 범인 외계인을 보여주며 함께 붙잡는다.
  */
 const ROUNDS: Round[] = [
   {
@@ -74,7 +74,7 @@ const ROUNDS: Round[] = [
 
 const LENS_FEEDBACK: Record<LensKind, string> = {
   balanced: '거울이 맑아졌어! 사실에 가깝고, 마음도 조금 편해지는 생각이야.',
-  trapped: '음… 아직 몬스터 목소리가 들려. 함정에 그대로 빠진 생각이야. 다른 렌즈로 봐 볼까?',
+  trapped: '지지직… 아직 외계인 신호가 섞여 있어. 함정에 그대로 빠진 생각이야. 다른 렌즈로 봐 볼까?',
   forced: '너무 억지로 밝게 바꾸면 오래 못 가. 무조건 괜찮다는 것보다, 사실에 가까운 생각을 골라 봐.',
 };
 
@@ -89,9 +89,9 @@ const SAME_SITUATION = {
   ],
 };
 
-const INTRO_STEPS = ['생각이 감정을 바꿔', '생각 함정 = 몬스터', '렌즈로 다시 보는 법'];
+const INTRO_STEPS = ['생각이 감정을 바꿔', '생각 함정 = 외계인', '렌즈로 다시 보는 법'];
 
-/** 사냥 전에 기법을 알려주는 소개 (3장) */
+/** 붙잡기 전에 기법을 알려주는 소개 (3장) */
 function TrapIntro({ onStart }: { onStart: () => void }) {
   const [step, setStep] = useState(0);
   const [seen, setSeen] = useState<number[]>([]);
@@ -172,21 +172,22 @@ function TrapIntro({ onStart }: { onStart: () => void }) {
         {step === 1 && (
           <>
             <h2 id="intro-title" className="text-2xl text-night-text">
-              생각 함정 = 몬스터
+              생각 함정 = 장난꾸러기 외계인
             </h2>
             <p className="mt-2 leading-relaxed text-night-sub">
               우리가 자주 빠지는 치우친 생각 패턴을 <strong className="font-medium text-night-text">생각 함정</strong>이라고 해. 함정에 빠지면 감정이 실제보다 훨씬
-              커져. 누구 머릿속에나 사는 다섯 몬스터를 소개할게.
+              커져. 거울 행성에는 몰래 생각을 비틀어 놓는 장난꾸러기 외계인 다섯이 살아. 사실 누구 머릿속에나 놀러 오는 애들이야.
             </p>
-            <ul className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            <ul className="mt-5 grid gap-3 sm:grid-cols-2">
               {TRAP_INFO.map((t) => (
                 <li key={t.name} className="flex gap-3 rounded-2xl border p-3" style={{ borderColor: `${t.color}66`, backgroundColor: `${t.color}0F` }}>
                   <span className="h-14 w-14 shrink-0">
-                    <TrapMonster name={t.name} />
+                    <TrapAlien name={t.name} />
                   </span>
                   <span className="min-w-0">
                     <span className="block font-medium text-night-text">
-                      {t.monster} <span className="text-sm font-normal text-night-sub">· {t.name}</span>
+                      {t.alien} <span className="text-sm font-normal text-night-sub">· {t.tribe}</span>
+                      <span className="block text-sm font-medium" style={{ color: t.color }}>{t.name}</span>
                     </span>
                     <span className="mt-0.5 block text-sm leading-relaxed text-night-sub">{t.desc}</span>
                     <span className="mt-1 block text-sm italic text-night-text">"{t.example}"</span>
@@ -202,10 +203,10 @@ function TrapIntro({ onStart }: { onStart: () => void }) {
             <h2 id="intro-title" className="text-2xl text-night-text">
               렌즈로 다시 보는 법
             </h2>
-            <p className="mt-2 leading-relaxed text-night-sub">몬스터를 없앨 수는 없지만, 들키면 힘이 쭉 빠져. 세 단계만 기억해.</p>
+            <p className="mt-2 leading-relaxed text-night-sub">외계인이 다시 놀러 오는 건 막을 수 없지만, 들키면 힘이 쭉 빠져서 우주선으로 돌아가. 세 단계만 기억해.</p>
             <ol className="mt-5 space-y-3">
               {[
-                { t: '몬스터 이름 부르기', d: '"아, 지금 폴짝이가 나왔네." 이름만 붙여도 생각과 거리가 생겨.' },
+                { t: '외계인 이름 부르기', d: '"아, 지금 워피가 왔네." 이름만 붙여도 생각과 거리가 생겨.' },
                 { t: '탐정 질문 던지기', d: '진짜 증거가 있어? 다른 설명은 없을까? 친구가 이런 생각을 하면 뭐라고 말해 줄까?' },
                 { t: '사실에 가까운 생각 고르기', d: '함정에 빠진 생각 대신, 증거에 맞는 생각을 찾아.' },
               ].map((s, i) => (
@@ -243,7 +244,7 @@ function TrapIntro({ onStart }: { onStart: () => void }) {
             className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
           >
             <Telescope aria-hidden="true" className="h-4 w-4" />
-            몬스터 사냥 시작!
+            외계인 붙잡으러 가기!
           </button>
         ) : (
           <button
@@ -315,8 +316,8 @@ export default function ThinkingTrapsPage() {
 
   const finish = () => {
     const matched = ROUNDS.filter((q, i) => firstGuesses[i] === q.answer).length;
-    const lines = [`함정 몬스터 ${caught.length}마리 잡음 (처음에 바로 찾은 것 ${matched}개)`];
-    if (own && ownTrap) lines.push(`내 생각에서: "${own.situation}" → ${ownTrap} (${trapInfo(ownTrap).monster})`);
+    const lines = [`함정 외계인 ${caught.length}명 붙잡음 (처음에 바로 찾은 것 ${matched}개)`];
+    if (own && ownTrap) lines.push(`내 생각에서: "${own.situation}" → ${ownTrap} (${trapInfo(ownTrap).alien})`);
     complete(lines.join('\n'));
     setDone(true);
   };
@@ -354,17 +355,17 @@ export default function ThinkingTrapsPage() {
 
   return (
     <PracticeShell missionId={MISSION}>
-      {/* 몬스터 도감 */}
+      {/* 외계인 도감 */}
       <section aria-labelledby="shelf-title" className="rounded-3xl border border-night-line bg-night-card p-4">
         <div className="flex items-baseline justify-between">
           <h2 id="shelf-title" className="font-sans text-base font-medium text-night-text">
-            함정 몬스터 도감
+            함정 외계인 도감
           </h2>
           <p className="text-sm tabular-nums text-night-sub">
             <button type="button" onClick={() => setStarted(false)} className="mr-3 text-night-star underline-offset-4 hover:underline">
               설명 다시 보기
             </button>
-            {caught.length} / {TRAP_INFO.length} 잡음
+            {caught.length} / {TRAP_INFO.length} 붙잡음
           </p>
         </div>
         <ul className="mt-3 grid grid-cols-5 gap-[2%]">
@@ -377,9 +378,9 @@ export default function ThinkingTrapsPage() {
                 style={{ borderColor: got ? `${t.color}99` : '#222A55', backgroundColor: got ? `${t.color}14` : 'transparent' }}
               >
                 <div className={`h-12 w-12 sm:h-14 sm:w-14 ${got ? 'motion-safe:animate-[pop-in_0.5s_ease-out]' : ''}`}>
-                  <TrapMonster name={t.name} silhouette={!got} happy />
+                  <TrapAlien name={t.name} silhouette={!got} happy />
                 </div>
-                <p className="mt-1 text-xs font-medium text-night-text">{got ? t.monster : '???'}</p>
+                <p className="mt-1 text-xs font-medium text-night-text">{got ? t.alien : '???'}</p>
                 <p className="text-[11px] leading-tight text-night-sub">{got ? t.name : '아직 못 찾음'}</p>
               </li>
             );
@@ -391,7 +392,7 @@ export default function ThinkingTrapsPage() {
         <section aria-labelledby="hunt-title" className="space-y-4">
           <div className="flex items-baseline justify-between">
             <h2 id="hunt-title" className="font-sans text-lg font-medium text-night-text">
-              {stage === 'find' ? '거울 속 생각에 숨은 몬스터를 찾아 봐' : stage === 'clear' ? '거울이 맑아졌어' : '렌즈로 다시 보기'}
+              {stage === 'find' ? '거울 속 생각에 숨은 외계인을 찾아 봐' : stage === 'clear' ? '거울이 맑아졌어' : '렌즈로 다시 보기'}
             </h2>
             <p className="text-sm tabular-nums text-night-sub">
               거울 {round + 1} / {ROUNDS.length}
@@ -423,15 +424,17 @@ export default function ThinkingTrapsPage() {
             <div className="relative flex items-center gap-5">
               <div className="h-24 w-24 shrink-0 sm:h-28 sm:w-28">
                 {stage === 'find' ? (
-                  // 정답 모양이 드러나지 않게, 누구인지 모르는 그림자만
+                  // 정답 모양이 드러나지 않게, 누구인지 모르는 외계인 그림자만
                   <svg viewBox="0 0 100 100" className="h-full w-full motion-safe:animate-pulse" aria-hidden="true">
-                    <path d="M50 14 C72 14 86 30 86 52 C86 74 72 88 50 88 C28 88 14 74 14 52 C14 30 28 14 50 14 Z" fill="#2A3366" />
-                    <ellipse cx="40" cy="48" rx="4" ry="5" fill="#FFE27A" />
-                    <ellipse cx="60" cy="48" rx="4" ry="5" fill="#FFE27A" />
+                    <path d="M50 20 L50 8" stroke="#2A3366" strokeWidth="2.6" strokeLinecap="round" />
+                    <circle cx="50" cy="7" r="4.5" fill="#2A3366" />
+                    <path d="M50 20 C74 20 88 36 88 54 C88 74 70 90 50 90 C30 90 12 74 12 54 C12 36 26 20 50 20 Z" fill="#2A3366" />
+                    <ellipse cx="35" cy="55" rx="6" ry="9" transform="rotate(-24 35 55)" fill="#FFE27A" />
+                    <ellipse cx="65" cy="55" rx="6" ry="9" transform="rotate(24 65 55)" fill="#FFE27A" />
                   </svg>
                 ) : (
                   <div className="h-full w-full motion-safe:animate-[pop-in_0.5s_ease-out]">
-                    <TrapMonster name={r.answer} happy={stage === 'clear'} />
+                    <TrapAlien name={r.answer} happy={stage === 'clear'} />
                   </div>
                 )}
               </div>
@@ -449,8 +452,8 @@ export default function ThinkingTrapsPage() {
                 className="relative mt-4 rounded-2xl px-4 py-2.5 text-sm text-[#2A1B3D] motion-safe:animate-[fadein_0.4s_ease-out]"
                 style={{ backgroundColor: '#FFF6E8' }}
               >
-                <span className="font-semibold">{answerInfo.monster}:</span>{' '}
-                {stage === 'clear' ? '으앗, 렌즈에 들켜서 힘이 쭉 빠졌어…' : answerInfo.caught}
+                <span className="font-semibold">{answerInfo.alien}:</span>{' '}
+                {stage === 'clear' ? '으앗, 렌즈에 들켰다! 우주선으로 돌아갈게~ 🛸' : answerInfo.caught}
               </div>
             )}
           </div>
@@ -460,11 +463,11 @@ export default function ThinkingTrapsPage() {
               <p>
                 {guess === r.answer ? (
                   <>
-                    <span className="font-medium text-emo-calm">잡았다!</span> {answerInfo.monster}({answerInfo.name})가 숨어 있었어.
+                    <span className="font-medium text-emo-calm">붙잡았다!</span> {answerInfo.alien}({answerInfo.name})가 숨어 있었어.
                   </>
                 ) : (
                   <>
-                    {trapInfo(guess).monster}도 조금 있을 수 있어. 그런데 진짜 범인은 <span className="font-medium">{answerInfo.monster}({answerInfo.name})</span>였어. 같이 잡았다!
+                    {trapInfo(guess).alien}도 조금 있을 수 있어. 그런데 진짜 범인은 <span className="font-medium">{answerInfo.alien}({answerInfo.name})</span>였어. 같이 붙잡았다!
                   </>
                 )}
               </p>
@@ -474,7 +477,7 @@ export default function ThinkingTrapsPage() {
 
           {/* 단계별 조작 */}
           {stage === 'find' && (
-            <div role="group" aria-label="숨은 몬스터 고르기" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            <div role="group" aria-label="숨은 외계인 고르기" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
               {TRAP_INFO.map((t) => (
                 <button
                   key={t.name}
@@ -484,9 +487,9 @@ export default function ThinkingTrapsPage() {
                   style={{ ['--focus-color' as string]: t.color }}
                 >
                   <span className="h-12 w-12">
-                    <TrapMonster name={t.name} />
+                    <TrapAlien name={t.name} />
                   </span>
-                  <span className="mt-1 text-sm font-medium text-night-text">{t.monster}</span>
+                  <span className="mt-1 text-sm font-medium text-night-text">{t.alien}</span>
                   <span className="text-xs text-night-sub">{t.name}</span>
                 </button>
               ))}
@@ -542,7 +545,7 @@ export default function ThinkingTrapsPage() {
               onClick={nextRound}
               className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
             >
-              {round + 1 >= ROUNDS.length ? '사냥 끝내기' : '다음 거울로'}
+              {round + 1 >= ROUNDS.length ? '붙잡기 끝내기' : '다음 거울로'}
               <ArrowRight aria-hidden="true" className="h-4 w-4" />
             </button>
           )}
@@ -552,17 +555,17 @@ export default function ThinkingTrapsPage() {
           <section className="rounded-3xl border border-night-star/40 bg-night-card p-5 motion-safe:animate-[fadein_0.6s_ease-out]">
             <p className="flex items-center gap-2 font-display text-xl text-night-text">
               <Sparkles aria-hidden="true" className="h-5 w-5 text-night-star" />
-              함정 몬스터 다섯 마리를 모두 잡았어!
+              함정 외계인 다섯을 모두 우주선으로 돌려보냈어! 🛸
             </p>
             <p className="mt-2 leading-relaxed text-night-sub">
-              몬스터는 누구 머릿속에나 살아. 없앨 수는 없지만, 이름을 불러 주면 힘이 빠져. 마음이 확 상할 때 "지금 어떤 몬스터가 나왔지?" 하고 찾아봐.
+              외계인들은 또 놀러 올 거야. 누구 머릿속에나 오거든. 그래도 이름을 불러 주면 힘이 빠져. 마음이 확 상할 때 "지금 어떤 외계인이 왔지?" 하고 찾아봐.
             </p>
           </section>
 
           {recent.length > 0 && (
             <section aria-labelledby="own-title" className="space-y-3">
               <h2 id="own-title" className="font-sans text-lg font-medium text-night-text">
-                보너스: 내 생각에도 몬스터가 숨어 있을까? <span className="text-sm font-normal text-night-sub">(선택)</span>
+                보너스: 내 생각에도 외계인이 숨어 있을까? <span className="text-sm font-normal text-night-sub">(선택)</span>
               </h2>
               <div className="flex flex-col gap-2">
                 {recent.map((c) => (
@@ -581,10 +584,10 @@ export default function ThinkingTrapsPage() {
                 ))}
               </div>
               {own && (
-                <div className="flex flex-wrap gap-2" role="group" aria-label="내 생각에 숨은 몬스터 고르기">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="내 생각에 숨은 외계인 고르기">
                   {TRAP_INFO.map((t) => (
                     <Chip key={t.name} selected={ownTrap === t.name} onClick={() => setOwnTrap(ownTrap === t.name ? null : t.name)}>
-                      {t.monster} · {t.name}
+                      {t.alien} · {t.name}
                     </Chip>
                   ))}
                 </div>
