@@ -43,11 +43,10 @@ export function StudentBottomNav() {
       {!onMeteor && (
         <Link
           to={METEOR_LINK.to}
-          aria-label={METEOR_LINK.label}
-          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-30 flex items-center gap-1.5 rounded-full border border-emo-hot/60 bg-night-card px-4 py-3 text-sm font-medium text-night-text shadow-[0_0_24px_rgba(255,142,114,0.35)] md:hidden"
+          aria-label="별똥별 띄우기"
+          className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-30 flex h-14 w-14 items-center justify-center rounded-full border border-emo-hot/60 bg-night-card shadow-[0_0_24px_rgba(255,142,114,0.35)] md:hidden"
         >
-          <Sparkles aria-hidden="true" className="h-5 w-5 text-emo-hot" />
-          별똥별
+          <Sparkles aria-hidden="true" className="h-6 w-6 text-emo-hot" />
         </Link>
       )}
       <nav

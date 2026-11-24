@@ -67,9 +67,11 @@ function EmotionPlane({
     <div className="grid grid-cols-[auto_1fr_auto] grid-rows-[auto_1fr_auto] items-center gap-2 text-sm text-night-sub">
       <span className="col-start-2 text-center">에너지 높음</span>
       <span className="row-start-2">불쾌</span>
+      {/* 사분면 이름은 SVG가 줄어들어도 글자가 작아지지 않게 HTML로 얹는다 (최소 11px) */}
+      <div className="relative row-start-2">
       <svg
         viewBox={`0 0 ${SIZE} ${SIZE}`}
-        className="row-start-2 w-full cursor-crosshair rounded-2xl border border-night-line bg-night-card"
+        className="block w-full cursor-crosshair rounded-2xl border border-night-line bg-night-card"
         role="application"
         aria-label="감정 좌표 평면"
         aria-describedby={helpId}
@@ -92,15 +94,6 @@ function EmotionPlane({
               fill={QUADRANTS[k].color}
               opacity={q === k ? 0.14 : 0.06}
             />
-            <text
-              x={QUAD_RECT[k].x + (k === 'hot' || k === 'low' ? 16 : SIZE / 2 - 16)}
-              y={QUAD_RECT[k].y + (k === 'hot' || k === 'joy' ? 28 : SIZE / 2 - 16)}
-              textAnchor={k === 'hot' || k === 'low' ? 'start' : 'end'}
-              fill={QUADRANTS[k].color}
-              fontSize="13"
-            >
-              {QUADRANTS[k].label}
-            </text>
           </g>
         ))}
         <line x1={SIZE / 2} y1={0} x2={SIZE / 2} y2={SIZE} stroke="#222A55" strokeWidth="1.5" />
@@ -113,6 +106,17 @@ function EmotionPlane({
           </g>
         )}
       </svg>
+      {(Object.keys(QUAD_RECT) as Quadrant[]).map((k) => (
+        <span
+          key={k}
+          aria-hidden="true"
+          className={`pointer-events-none absolute text-[11px] font-medium leading-tight sm:text-[13px] ${k === 'hot' || k === 'joy' ? 'top-2' : 'bottom-2'} ${k === 'hot' || k === 'low' ? 'left-2.5' : 'right-2.5 text-right'}`}
+          style={{ color: QUADRANTS[k].color }}
+        >
+          {QUADRANTS[k].label}
+        </span>
+      ))}
+      </div>
       <span className="row-start-2">유쾌</span>
       <span className="col-start-2 text-center">에너지 낮음</span>
       <p id={helpId} className="col-span-3 mt-2 text-center text-xs" aria-live="polite">

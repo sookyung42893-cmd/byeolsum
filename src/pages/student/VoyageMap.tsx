@@ -1,4 +1,4 @@
-import { useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useState, type CSSProperties, type KeyboardEvent, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useApp, useCurrentStudent } from '../../context/AppContext';
@@ -7,23 +7,59 @@ import { completedCount, courageChallenges, courageStars, requiredMissions, stat
 import { SparkleStar, mixColor, sparklePath } from '../../components/Sparkle';
 import type { PlanetStatus } from '../../types';
 
-/** viewBox 크기 (그리기 단위일 뿐, 화면 크기와 무관하게 늘고 준다) */
-const W = 1000;
-const H = 460;
 const R = 30;
 const NIGHT = '#0B1026';
 const NEBULA_FOCUS = '#C9A7FF';
 
-/** 지그재그 항로: 정거장 7곳을 위아래로 번갈아 놓는다 */
-const STEP = (W - 180) / (STATIONS.length - 1);
-const POS = STATIONS.map((s, i) => ({ key: s.key, x: 90 + i * STEP, y: i % 2 === 0 ? 300 : 150 }));
-const posOf = (key: string) => POS.find((p) => p.key === key)!;
+/**
+ * 지도 배치. viewBox 크기는 그리기 단위일 뿐, 화면 크기에 맞춰 늘고 준다.
+ * - 가로(노트북): 정거장 7곳을 왼쪽→오른쪽, 위아래로 번갈아
+ * - 세로(휴대폰, 768px 미만): 1회기가 맨 위, 8회기가 맨 아래로 내려가며 좌우로 번갈아
+ */
+interface MapLayout {
+  vertical: boolean;
+  W: number;
+  H: number;
+  pos: { key: string; x: number; y: number }[];
+  dust: { x: number; y: number; r: number; o: number }[];
+}
 
-const DUST = (() => {
+function makeDust(W: number, H: number, n: number) {
   let s = 11;
   const rand = () => (s = (s * 16807) % 2147483647) / 2147483647;
-  return Array.from({ length: 90 }, () => ({ x: rand() * W, y: rand() * H, r: 0.4 + rand() * 0.9, o: 0.1 + rand() * 0.3 }));
+  return Array.from({ length: n }, () => ({ x: rand() * W, y: rand() * H, r: 0.4 + rand() * 0.9, o: 0.1 + rand() * 0.3 }));
+}
+
+const HORIZONTAL: MapLayout = (() => {
+  const W = 1000;
+  const H = 460;
+  const step = (W - 180) / (STATIONS.length - 1);
+  return { vertical: false, W, H, pos: STATIONS.map((s, i) => ({ key: s.key, x: 90 + i * step, y: i % 2 === 0 ? 300 : 150 })), dust: makeDust(W, H, 90) };
 })();
+
+const VERTICAL: MapLayout = (() => {
+  const W = 400;
+  const step = 150;
+  const H = 100 + step * (STATIONS.length - 1) + 100;
+  return { vertical: true, W, H, pos: STATIONS.map((s, i) => ({ key: s.key, x: i % 2 === 0 ? 105 : 295, y: 100 + i * step })), dust: makeDust(W, H, 110) };
+})();
+
+const LayoutContext = createContext<MapLayout>(HORIZONTAL);
+const useLayout = () => useContext(LayoutContext);
+const usePos = (key: string) => useLayout().pos.find((p) => p.key === key)!;
+
+/** 768px 이상이면 가로 지도 */
+function useWide() {
+  const query = '(min-width: 768px)';
+  const [wide, setWide] = useState(() => (typeof window === 'undefined' ? true : window.matchMedia(query).matches));
+  useEffect(() => {
+    const mq = window.matchMedia(query);
+    const on = () => setWide(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  return wide;
+}
 
 const STATUS_TEXT: Record<PlanetStatus, string> = {
   완료: '완료',
@@ -164,7 +200,7 @@ function MirrorRing({ x, y, color, half, dim }: { x: number; y: number; color: s
 
 /** 행성: 왼쪽 위에서 빛을 받는 구, 대기 빛, 표면 질감, 행성별 무늬 */
 function PlanetSphere({ station, status, selected }: { station: Station; status: PlanetStatus; selected: boolean }) {
-  const { x, y } = posOf(station.key);
+  const { x, y } = usePos(station.key);
   const pid = station.planetId!;
   const c = station.color;
   const k = `pl${pid}`;
@@ -267,7 +303,7 @@ function PlanetSphere({ station, status, selected }: { station: Station; status:
 
 /** 용기 구간: 테두리 없이 보라·분홍 빛 구름이 부드럽게 퍼지는 성운 */
 function Nebula({ status, selected }: { status: PlanetStatus; selected: boolean }) {
-  const { x, y } = posOf('courage');
+  const { x, y } = usePos('courage');
   const locked = status === '잠김';
   // 잠김일 땐 채도를 낮춘 색으로 그린다 (필터로 채도를 낮추면 번진 구름이 네모로 잘려 보여서)
   const tone = (col: string) => (locked ? mixColor(col, '#6E7196', 0.75) : col);
@@ -340,10 +376,11 @@ function StationMark({
   focused: boolean;
   onSelect: () => void;
 }) {
-  const { x, y } = posOf(station.key);
+  const { x, y } = usePos(station.key);
+  const layout = useLayout();
   const courage = station.kind === 'courage';
   const locked = status === '잠김';
-  const below = y > H / 2;
+  const below = y > layout.H / 2;
   const sessionText = courage ? `${station.sessions[0]}~${station.sessions[station.sessions.length - 1]}회기` : `${station.sessions[0]}회기`;
   const statusText = courage ? courageStatusText(status) : STATUS_TEXT[status];
   const reach = courage ? 52 : R;
@@ -375,23 +412,49 @@ function StationMark({
       {/* 누르기 쉬운 넓은 영역 */}
       <circle cx={x} cy={y} r={reach + 10} fill="transparent" />
       <g className="station-body">{body}</g>
-      <g textAnchor="middle">
-        <text x={x} y={below ? y + reach + 22 : y - reach - 50} fill="#A9B0D6" fontSize="11">
-          {sessionText}
-        </text>
-        <text x={x} y={below ? y + reach + 40 : y - reach - 32} fill={locked ? '#A9B0D6' : '#EEF0FF'} fontSize="14" fontWeight={focused ? 600 : 400}>
-          {station.name}
-        </text>
-        <text x={x} y={below ? y + reach + 58 : y - reach - 14} fill={status === '탐사중' ? '#F4C979' : '#A9B0D6'} fontSize="11">
-          {locked || !progress ? statusText : `${statusText} · ${progress}`}
-        </text>
-      </g>
+      {layout.vertical ? (
+        // 세로 지도: 이름표를 행성 옆(지도 가운데 쪽)에. 휴대폰에서도 읽히게 크게
+        <g textAnchor={x < layout.W / 2 ? 'start' : 'end'}>
+          {(() => {
+            const tx = x < layout.W / 2 ? x + reach + 16 : x - reach - 16;
+            return (
+              <>
+                <text x={tx} y={y - 16} fill="#B8BEE0" fontSize="14">
+                  {sessionText}
+                </text>
+                <text x={tx} y={y + 6} fill={locked ? '#B8BEE0' : '#EEF0FF'} fontSize="19" fontWeight={focused ? 600 : 500}>
+                  {station.name}
+                </text>
+                <text x={tx} y={y + 27} fill={status === '탐사중' ? '#F4C979' : '#B8BEE0'} fontSize="14">
+                  {locked || !progress ? statusText : `${statusText} · ${progress}`}
+                </text>
+              </>
+            );
+          })()}
+        </g>
+      ) : (
+        <g textAnchor="middle">
+          <text x={x} y={below ? y + reach + 22 : y - reach - 50} fill="#A9B0D6" fontSize="11">
+            {sessionText}
+          </text>
+          <text x={x} y={below ? y + reach + 40 : y - reach - 32} fill={locked ? '#A9B0D6' : '#EEF0FF'} fontSize="14" fontWeight={focused ? 600 : 400}>
+            {station.name}
+          </text>
+          <text x={x} y={below ? y + reach + 58 : y - reach - 14} fill={status === '탐사중' ? '#F4C979' : '#A9B0D6'} fontSize="11">
+            {locked || !progress ? statusText : `${statusText} · ${progress}`}
+          </text>
+        </g>
+      )}
     </g>
   );
 }
 
-/** 두 정거장을 잇는 부드러운 곡선 */
-function routePath(a: { x: number; y: number }, b: { x: number; y: number }) {
+/** 두 정거장을 잇는 부드러운 곡선 (세로 지도면 위아래로 휘어진다) */
+function routePath(a: { x: number; y: number }, b: { x: number; y: number }, vertical = false) {
+  if (vertical) {
+    const dy = (b.y - a.y) / 2;
+    return `M ${a.x} ${a.y} C ${a.x} ${a.y + dy} ${b.x} ${b.y - dy} ${b.x} ${b.y}`;
+  }
   const dx = (b.x - a.x) / 2;
   return `M ${a.x} ${a.y} C ${a.x + dx} ${a.y} ${b.x - dx} ${b.y} ${b.x} ${b.y}`;
 }
@@ -402,6 +465,8 @@ export default function VoyageMapPage() {
   const navigate = useNavigate();
   const here = stationOfSession(student.currentSession);
   const [focusKey, setFocusKey] = useState<string>(here.key);
+  const layout = useWide() ? HORIZONTAL : VERTICAL;
+  const { W, H } = layout;
 
   const statusOf = (s: Station) => stationStatus(db, student, s);
   const progressText = (s: Station) => {
@@ -426,21 +491,21 @@ export default function VoyageMapPage() {
         </p>
       </header>
 
-      {/* 휴대폰에서는 지도를 줄이지 않고 옆으로 밀어서 본다 */}
-      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border border-night-line bg-[radial-gradient(ellipse_at_center,#18204A_0%,#0B1026_75%)]">
-        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full min-w-[720px] md:min-w-0" role="group" aria-label="항해 지도, 정거장 일곱 곳">
-          {DUST.map((d, i) => (
+      <LayoutContext.Provider value={layout}>
+      <div className="overflow-hidden rounded-3xl border border-night-line bg-[radial-gradient(ellipse_at_center,#18204A_0%,#0B1026_75%)]">
+        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="group" aria-label="항해 지도, 정거장 일곱 곳">
+          {layout.dust.map((d, i) => (
             <circle key={i} cx={d.x} cy={d.y} r={d.r} fill="#EEF0FF" opacity={d.o} aria-hidden="true" />
           ))}
 
           {/* 항로: 부드러운 곡선 점선. 지나온 길은 금색, 앞으로 갈 길은 흐린 남색 */}
           <g aria-hidden="true" fill="none" strokeLinecap="round">
-            {POS.slice(1).map((b, i) => {
+            {layout.pos.slice(1).map((b, i) => {
               const passed = STATIONS[i + 1].sessions[0] <= student.currentSession;
               return (
                 <path
                   key={b.key}
-                  d={routePath(POS[i], b)}
+                  d={routePath(layout.pos[i], b, layout.vertical)}
                   stroke={passed ? '#F4C979' : '#3A4478'}
                   strokeOpacity={passed ? 0.75 : 0.9}
                   strokeWidth={2.6}
@@ -462,6 +527,7 @@ export default function VoyageMapPage() {
           ))}
         </svg>
       </div>
+      </LayoutContext.Provider>
 
       <section aria-live="polite" className="flex flex-col items-start gap-4 rounded-2xl border border-night-line bg-night-card px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
         <div>

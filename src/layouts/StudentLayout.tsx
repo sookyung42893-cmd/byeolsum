@@ -77,7 +77,8 @@ export default function StudentLayout() {
     <div className="theme-night flex min-h-screen flex-col bg-night-bg text-night-text md:flex-row">
       <StudentSideNav student={student} onLogOut={handleLogOut} onHelp={() => setHelp('help')} />
       <StudentTopBar student={student} onLogOut={handleLogOut} onHelp={() => setHelp('help')} />
-      <main className="min-w-0 flex-1 px-4 pb-36 pt-5 md:px-[4%] md:py-10">
+      {/* 휴대폰: 아래쪽 탭(4.5rem 위치) + 별똥별 버튼(3.5rem) + 16px 만큼 비워 두어 마지막 내용이 가려지지 않게 */}
+      <main className="min-w-0 flex-1 px-4 pb-[calc(4.5rem+3.5rem+1rem+env(safe-area-inset-bottom))] pt-5 md:px-[4%] md:py-10">
         <div className="mx-auto max-w-6xl">
           <Outlet />
         </div>

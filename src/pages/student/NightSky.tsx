@@ -514,12 +514,6 @@ export default function NightSkyPage() {
               <line x1={W / 2} y1={PAD / 2} x2={W / 2} y2={H - PAD / 2} />
               <line x1={PAD / 2} y1={H / 2} x2={W - PAD / 2} y2={H / 2} />
             </g>
-            <g aria-hidden="true" fill="#A9B0D6" fontSize="12">
-              <text x={W / 2} y={18} textAnchor="middle">에너지 높음</text>
-              <text x={W / 2} y={H - 8} textAnchor="middle">에너지 낮음</text>
-              <text x={10} y={H / 2 - 8}>불쾌</text>
-              <text x={W - 10} y={H / 2 - 8} textAnchor="end">유쾌</text>
-            </g>
 
             <g aria-hidden="true">
               {constellations.map(({ word, list, color }) => (
@@ -580,6 +574,14 @@ export default function NightSkyPage() {
             })}
 
           </svg>
+
+          {/* 축 이름: SVG가 줄어도 글자는 최소 11px로 (HTML) */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 text-[11px] font-medium text-[#B8BEE0] md:text-xs">
+            <span className="absolute left-1/2 top-1.5 -translate-x-1/2">에너지 높음</span>
+            <span className="absolute bottom-1.5 left-1/2 -translate-x-1/2">에너지 낮음</span>
+            <span className="absolute left-2 top-1/2 -translate-y-[130%]">불쾌</span>
+            <span className="absolute right-2 top-1/2 -translate-y-[130%]">유쾌</span>
+          </div>
 
           {pinned && (
             <div className="hidden md:block">
