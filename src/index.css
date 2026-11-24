@@ -334,3 +334,37 @@
     animation: none;
   }
 }
+
+/* 함정 몬스터: 잡힐 때 튀어나오기 · 거울이 맑아질 때 빛 쓸기 */
+@keyframes pop-in {
+  0% {
+    transform: scale(0.3);
+    opacity: 0;
+  }
+  70% {
+    transform: scale(1.15);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.mirror-sweep {
+  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.16) 48%, transparent 66%);
+  background-size: 250% 100%;
+  animation: mirror-sweep 1.4s ease-out 1 forwards;
+}
+@keyframes mirror-sweep {
+  from {
+    background-position: 120% 0;
+  }
+  to {
+    background-position: -120% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mirror-sweep {
+    animation: none;
+    background: none;
+  }
+}

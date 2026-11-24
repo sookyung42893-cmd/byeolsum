@@ -1,30 +1,84 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Telescope } from 'lucide-react';
+import { ArrowRight, Sparkles, Telescope } from 'lucide-react';
 import { useApp, useCurrentStudent } from '../../../context/AppContext';
 import { checkInsOf } from '../../../lib/selectors';
 import { emotionLabel } from '../../../data/emotions';
 import Chip from '../../../components/Chip';
+import TrapMonster, { TRAP_INFO, trapInfo, type TrapName } from '../../../components/student/TrapMonster';
 import PracticeShell, { PracticeDone, usePracticeComplete } from './PracticeShell';
 
 const MISSION = 'p4-practice';
 
-const TRAPS = [
-  { name: '결론 건너뛰기', desc: '확인도 하기 전에 결론부터 내려 버려.' },
-  { name: '최악 상상하기', desc: '일어날 수 있는 가장 나쁜 일만 떠올려.' },
-  { name: '마음 읽기', desc: '다른 사람 속마음을 안다고 믿어 버려.' },
-  { name: '전부 아니면 전무', desc: '완벽하지 않으면 다 실패라고 봐.' },
-  { name: '꼬리표 붙이기', desc: '한 번의 일로 나를 "원래 그런 사람"이라고 정해.' },
-] as const;
-type Trap = (typeof TRAPS)[number]['name'];
+type LensKind = 'balanced' | 'trapped' | 'forced';
 
-const QUIZ: { thought: string; answer: Trap }[] = [
-  { thought: '답장이 30분째 없어. 분명 나를 싫어하게 된 거야.', answer: '결론 건너뛰기' },
-  { thought: '발표 망치면 반 애들이 졸업할 때까지 날 비웃을 거야.', answer: '최악 상상하기' },
-  { thought: '쟤 표정 보니까 속으로 날 한심하다고 생각하는 게 분명해.', answer: '마음 읽기' },
-  { thought: '100점 아니면 공부한 게 다 의미 없어.', answer: '전부 아니면 전무' },
-  { thought: '한 문제 틀렸어. 나는 원래 멍청한 애야.', answer: '꼬리표 붙이기' },
+interface Round {
+  thought: string;
+  answer: TrapName;
+  /** 렌즈로 다시 본 생각 후보 (순서대로 보여준다) */
+  lenses: { text: string; kind: LensKind }[];
+}
+
+/**
+ * 함정 몬스터 사냥: 거울에 비친 생각 속에 숨은 몬스터(생각 함정)를 찾아 잡고,
+ * 렌즈로 다시 본 생각(균형 잡힌 생각)을 골라 거울을 맑게 만든다.
+ * 틀려도 벌칙은 없고, 정답 몬스터를 보여주며 함께 잡는다.
+ */
+const ROUNDS: Round[] = [
+  {
+    thought: '답장이 30분째 없어. 분명 나를 싫어하게 된 거야.',
+    answer: '결론 건너뛰기',
+    lenses: [
+      { text: '30분이면 충분히 길어. 날 싫어하는 게 맞아.', kind: 'trapped' },
+      { text: '바쁘거나 폰을 못 보는 중일 수도 있어. 조금 더 기다려 보고 확인해 보자.', kind: 'balanced' },
+      { text: '난 신경 하나도 안 써. 아무 상관 없어.', kind: 'forced' },
+    ],
+  },
+  {
+    thought: '발표 망치면 반 애들이 졸업할 때까지 날 비웃을 거야.',
+    answer: '최악 상상하기',
+    lenses: [
+      { text: '난 완벽하게 할 거니까 걱정할 필요도 없어.', kind: 'forced' },
+      { text: '분명 망칠 거고, 평생 놀림감이 될 거야.', kind: 'trapped' },
+      { text: '조금 실수할 수는 있어. 그래도 다들 금방 잊고, 다음에 또 기회가 있어.', kind: 'balanced' },
+    ],
+  },
+  {
+    thought: '쟤 표정 보니까 속으로 날 한심하다고 생각하는 게 분명해.',
+    answer: '마음 읽기',
+    lenses: [
+      { text: '표정만으로는 속마음을 알 수 없어. 그냥 피곤한 걸 수도 있어.', kind: 'balanced' },
+      { text: '모두가 날 좋아하니까 그럴 리 없어.', kind: 'forced' },
+      { text: '저 눈빛은 확실히 날 무시하는 거야.', kind: 'trapped' },
+    ],
+  },
+  {
+    thought: '100점 아니면 공부한 게 다 의미 없어.',
+    answer: '전부 아니면 전무',
+    lenses: [
+      { text: '한 문제라도 틀리면 실패한 거야.', kind: 'trapped' },
+      { text: '시험 따위 의미 없으니까 공부 안 해도 돼.', kind: 'forced' },
+      { text: '100점이 아니어도 지난번보다 더 많이 알게 됐어. 그만큼 의미가 있어.', kind: 'balanced' },
+    ],
+  },
+  {
+    thought: '한 문제 틀렸어. 나는 원래 멍청한 애야.',
+    answer: '꼬리표 붙이기',
+    lenses: [
+      { text: '한 문제 틀린 거지, 내가 멍청한 사람인 건 아니야. 틀린 건 다시 보면 돼.', kind: 'balanced' },
+      { text: '역시 난 뭘 해도 안 되는 애야.', kind: 'trapped' },
+      { text: '그 문제가 이상했던 거지, 난 하나도 안 틀렸어.', kind: 'forced' },
+    ],
+  },
 ];
+
+const LENS_FEEDBACK: Record<LensKind, string> = {
+  balanced: '거울이 맑아졌어! 사실에 가깝고, 마음도 조금 편해지는 생각이야.',
+  trapped: '음… 아직 몬스터 목소리가 들려. 함정에 그대로 빠진 생각이야. 다른 렌즈로 봐 볼까?',
+  forced: '너무 억지로 밝게 바꾸면 오래 못 가. 무조건 괜찮다는 것보다, 사실에 가까운 생각을 골라 봐.',
+};
+
+type Stage = 'find' | 'caught' | 'lens' | 'clear';
 
 export default function ThinkingTrapsPage() {
   const { db } = useApp();
@@ -35,18 +89,51 @@ export default function ThinkingTrapsPage() {
     .filter((c) => c.situation.trim())
     .slice(0, 5);
 
-  const [picks, setPicks] = useState<(Trap | null)[]>(QUIZ.map(() => null));
+  const [round, setRound] = useState(0);
+  const [stage, setStage] = useState<Stage>('find');
+  const [guess, setGuess] = useState<TrapName | null>(null);
+  const [firstGuesses, setFirstGuesses] = useState<(TrapName | null)[]>(ROUNDS.map(() => null));
+  const [lensPick, setLensPick] = useState<number | null>(null);
+  const [caught, setCaught] = useState<TrapName[]>([]);
+  const [huntDone, setHuntDone] = useState(false);
   const [ownId, setOwnId] = useState<string | null>(null);
-  const [ownTrap, setOwnTrap] = useState<Trap | null>(null);
+  const [ownTrap, setOwnTrap] = useState<TrapName | null>(null);
   const [done, setDone] = useState(false);
 
-  const answered = picks.filter(Boolean).length;
+  const r = ROUNDS[round];
   const own = recent.find((c) => c.id === ownId);
+  const answerInfo = trapInfo(r.answer);
+  const lensKind = lensPick !== null ? r.lenses[lensPick].kind : null;
+
+  const pickMonster = (name: TrapName) => {
+    if (stage !== 'find') return;
+    setGuess(name);
+    setFirstGuesses((g) => g.map((v, i) => (i === round ? name : v)));
+    setCaught((c) => (c.includes(r.answer) ? c : [...c, r.answer]));
+    setStage('caught');
+  };
+
+  const pickLens = (i: number) => {
+    if (stage === 'clear') return;
+    setLensPick(i);
+    if (r.lenses[i].kind === 'balanced') setStage('clear');
+  };
+
+  const nextRound = () => {
+    if (round + 1 >= ROUNDS.length) {
+      setHuntDone(true);
+      return;
+    }
+    setRound(round + 1);
+    setStage('find');
+    setGuess(null);
+    setLensPick(null);
+  };
 
   const finish = () => {
-    const found = [...new Set(picks.filter(Boolean))].join(', ');
-    const lines = [`예시에서 찾아본 함정: ${found}`];
-    if (own && ownTrap) lines.push(`내 생각에서: "${own.situation}" → ${ownTrap}`);
+    const matched = ROUNDS.filter((q, i) => firstGuesses[i] === q.answer).length;
+    const lines = [`함정 몬스터 ${caught.length}마리 잡음 (처음에 바로 찾은 것 ${matched}개)`];
+    if (own && ownTrap) lines.push(`내 생각에서: "${own.situation}" → ${ownTrap} (${trapInfo(ownTrap).monster})`);
     complete(lines.join('\n'));
     setDone(true);
   };
@@ -71,100 +158,251 @@ export default function ThinkingTrapsPage() {
 
   return (
     <PracticeShell missionId={MISSION}>
-      <section aria-labelledby="traps-title">
-        <h2 id="traps-title" className="font-sans text-lg font-medium text-night-text">
-          생각 함정 다섯 가지
-        </h2>
+      {/* 몬스터 도감 */}
+      <section aria-labelledby="shelf-title" className="rounded-3xl border border-night-line bg-night-card p-4">
+        <div className="flex items-baseline justify-between">
+          <h2 id="shelf-title" className="font-sans text-base font-medium text-night-text">
+            함정 몬스터 도감
+          </h2>
+          <p className="text-sm tabular-nums text-night-sub">
+            {caught.length} / {TRAP_INFO.length} 잡음
+          </p>
+        </div>
         <ul className="mt-3 grid grid-cols-5 gap-[2%]">
-          {TRAPS.map((t) => (
-            <li key={t.name} className="rounded-2xl border border-night-line bg-night-card p-3">
-              <p className="font-medium text-night-star">{t.name}</p>
-              <p className="mt-1 text-xs leading-relaxed text-night-sub">{t.desc}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section aria-labelledby="quiz-title" className="space-y-4">
-        <h2 id="quiz-title" className="font-sans text-lg font-medium text-night-text">
-          1. 이 생각은 어떤 함정에 빠졌을까?
-        </h2>
-        <p className="text-sm text-night-sub">정답 맞히기가 아니야. 하나에 꼭 들어맞지 않을 수도 있어.</p>
-        <ol className="space-y-3">
-          {QUIZ.map((q, i) => {
-            const pick = picks[i];
+          {TRAP_INFO.map((t) => {
+            const got = caught.includes(t.name);
             return (
-              <li key={q.thought} className="rounded-2xl border border-night-line bg-night-card p-4">
-                <p className="text-night-text">"{q.thought}"</p>
-                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label={`${i + 1}번 생각의 함정 고르기`}>
-                  {TRAPS.map((t) => (
-                    <Chip key={t.name} selected={pick === t.name} onClick={() => setPicks((p) => p.map((v, j) => (j === i ? t.name : v)))}>
-                      {t.name}
-                    </Chip>
-                  ))}
+              <li
+                key={t.name}
+                className="flex flex-col items-center rounded-2xl border px-1 py-2 text-center transition"
+                style={{ borderColor: got ? `${t.color}99` : '#222A55', backgroundColor: got ? `${t.color}14` : 'transparent' }}
+              >
+                <div className={`h-12 w-12 sm:h-14 sm:w-14 ${got ? 'motion-safe:animate-[pop-in_0.5s_ease-out]' : ''}`}>
+                  <TrapMonster name={t.name} silhouette={!got} happy />
                 </div>
-                {pick && (
-                  <p aria-live="polite" className="mt-2 text-sm text-night-sub">
-                    {pick === q.answer
-                      ? `맞아, ${q.answer}에 가까워.`
-                      : `그렇게 볼 수도 있어. 이 생각은 ${q.answer}에 더 가까워.`}
-                  </p>
-                )}
+                <p className="mt-1 text-xs font-medium text-night-text">{got ? t.monster : '???'}</p>
+                <p className="text-[11px] leading-tight text-night-sub">{got ? t.name : '아직 못 찾음'}</p>
               </li>
             );
           })}
-        </ol>
+        </ul>
       </section>
 
-      {recent.length > 0 && (
-        <section aria-labelledby="own-title" className="space-y-3">
-          <h2 id="own-title" className="font-sans text-lg font-medium text-night-text">
-            2. 내 생각에서도 찾아볼까? <span className="text-sm font-normal text-night-sub">(선택)</span>
-          </h2>
-          <div className="flex flex-col gap-2">
-            {recent.map((c) => (
-              <button
-                key={c.id}
-                type="button"
-                aria-pressed={ownId === c.id}
-                onClick={() => setOwnId(ownId === c.id ? null : c.id)}
-                className={`rounded-2xl border p-3 text-left text-sm transition ${
-                  ownId === c.id ? 'border-night-star bg-night-star/10' : 'border-night-line bg-night-card hover:border-night-sub'
-                }`}
-              >
-                <span className="text-night-text">{c.situation}</span>
-                <span className="ml-2 text-xs text-night-sub">{emotionLabel(c)}</span>
-              </button>
-            ))}
+      {!huntDone ? (
+        <section aria-labelledby="hunt-title" className="space-y-4">
+          <div className="flex items-baseline justify-between">
+            <h2 id="hunt-title" className="font-sans text-lg font-medium text-night-text">
+              {stage === 'find' ? '거울 속 생각에 숨은 몬스터를 찾아 봐' : stage === 'clear' ? '거울이 맑아졌어' : '렌즈로 다시 보기'}
+            </h2>
+            <p className="text-sm tabular-nums text-night-sub">
+              거울 {round + 1} / {ROUNDS.length}
+            </p>
           </div>
-          {own && (
-            <div className="flex flex-wrap gap-2" role="group" aria-label="내 생각의 함정 고르기">
-              {TRAPS.map((t) => (
-                <Chip key={t.name} selected={ownTrap === t.name} onClick={() => setOwnTrap(ownTrap === t.name ? null : t.name)}>
-                  {t.name}
-                </Chip>
+
+          {/* 거울 */}
+          <div
+            className="relative overflow-hidden rounded-[2rem] border-2 p-6 sm:p-8"
+            style={{
+              borderColor: stage === 'clear' ? '#B9C2FF' : '#3A4378',
+              background:
+                stage === 'clear'
+                  ? 'linear-gradient(160deg, #1E2A5C 0%, #151B3A 60%)'
+                  : 'radial-gradient(circle at 50% 40%, #2A2350 0%, #151B3A 75%)',
+            }}
+          >
+            {/* 안개 (거울이 맑아지면 걷힌다) */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 motion-safe:transition-opacity motion-safe:duration-1000"
+              style={{
+                opacity: stage === 'clear' ? 0 : 1,
+                background: 'radial-gradient(ellipse at 20% 20%, #6B5BA855 0%, transparent 45%), radial-gradient(ellipse at 85% 80%, #6B5BA855 0%, transparent 45%)',
+              }}
+            />
+            {stage === 'clear' && <div aria-hidden="true" className="mirror-sweep pointer-events-none absolute inset-0" />}
+
+            <div className="relative flex items-center gap-5">
+              <div className="h-24 w-24 shrink-0 sm:h-28 sm:w-28">
+                {stage === 'find' ? (
+                  // 정답 모양이 드러나지 않게, 누구인지 모르는 그림자만
+                  <svg viewBox="0 0 100 100" className="h-full w-full motion-safe:animate-pulse" aria-hidden="true">
+                    <path d="M50 14 C72 14 86 30 86 52 C86 74 72 88 50 88 C28 88 14 74 14 52 C14 30 28 14 50 14 Z" fill="#2A3366" />
+                    <ellipse cx="40" cy="48" rx="4" ry="5" fill="#FFE27A" />
+                    <ellipse cx="60" cy="48" rx="4" ry="5" fill="#FFE27A" />
+                  </svg>
+                ) : (
+                  <div className="h-full w-full motion-safe:animate-[pop-in_0.5s_ease-out]">
+                    <TrapMonster name={r.answer} happy={stage === 'clear'} />
+                  </div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs text-night-sub">{stage === 'clear' ? '렌즈로 다시 본 생각' : '거울에 비친 생각'}</p>
+                <p className="mt-1 font-display text-xl leading-relaxed text-night-text sm:text-2xl">
+                  "{stage === 'clear' && lensPick !== null ? r.lenses[lensPick].text : r.thought}"
+                </p>
+                {stage === 'clear' && <p className="mt-2 text-sm text-night-sub line-through decoration-night-sub/60">"{r.thought}"</p>}
+              </div>
+            </div>
+
+            {stage !== 'find' && (
+              <div
+                className="relative mt-4 rounded-2xl px-4 py-2.5 text-sm text-[#2A1B3D] motion-safe:animate-[fadein_0.4s_ease-out]"
+                style={{ backgroundColor: '#FFF6E8' }}
+              >
+                <span className="font-semibold">{answerInfo.monster}:</span>{' '}
+                {stage === 'clear' ? '으앗, 렌즈에 들켜서 힘이 쭉 빠졌어…' : answerInfo.caught}
+              </div>
+            )}
+          </div>
+
+          <div aria-live="polite" className="min-h-[1.5rem] text-night-text">
+            {stage === 'caught' && guess && (
+              <p>
+                {guess === r.answer ? (
+                  <>
+                    <span className="font-medium text-emo-calm">잡았다!</span> {answerInfo.monster}({answerInfo.name})가 숨어 있었어.
+                  </>
+                ) : (
+                  <>
+                    {trapInfo(guess).monster}도 조금 있을 수 있어. 그런데 진짜 범인은 <span className="font-medium">{answerInfo.monster}({answerInfo.name})</span>였어. 같이 잡았다!
+                  </>
+                )}
+              </p>
+            )}
+            {(stage === 'lens' || stage === 'clear') && lensKind && <p>{LENS_FEEDBACK[lensKind]}</p>}
+          </div>
+
+          {/* 단계별 조작 */}
+          {stage === 'find' && (
+            <div role="group" aria-label="숨은 몬스터 고르기" className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+              {TRAP_INFO.map((t) => (
+                <button
+                  key={t.name}
+                  type="button"
+                  onClick={() => pickMonster(t.name)}
+                  className="flex flex-col items-center rounded-2xl border border-night-line bg-night-card px-2 py-3 text-center transition hover:border-night-sub motion-safe:hover:-translate-y-0.5"
+                  style={{ ['--focus-color' as string]: t.color }}
+                >
+                  <span className="h-12 w-12">
+                    <TrapMonster name={t.name} />
+                  </span>
+                  <span className="mt-1 text-sm font-medium text-night-text">{t.monster}</span>
+                  <span className="text-xs text-night-sub">{t.name}</span>
+                </button>
               ))}
             </div>
           )}
-        </section>
-      )}
 
-      <div>
-        <button
-          type="button"
-          disabled={answered < QUIZ.length}
-          onClick={finish}
-          className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
-        >
-          {alreadyDone ? '다시 기록하기' : '연습 마치기'}
-          <ArrowRight aria-hidden="true" className="h-4 w-4" />
-        </button>
-        {answered < QUIZ.length && (
-          <p className="mt-2 text-xs text-night-sub">
-            다섯 생각을 모두 살펴보면 마칠 수 있어 ({answered}/{QUIZ.length})
-          </p>
-        )}
-      </div>
+          {stage === 'caught' && (
+            <button
+              type="button"
+              onClick={() => setStage('lens')}
+              className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
+            >
+              <Telescope aria-hidden="true" className="h-4 w-4" />
+              렌즈로 다시 보기
+            </button>
+          )}
+
+          {(stage === 'lens' || stage === 'clear') && (
+            <div className="space-y-2">
+              <p className="text-sm text-night-sub">탐정 질문: 진짜 증거가 있어? 다른 설명은 없을까? 이 생각 중 어느 렌즈가 제일 맑게 보여?</p>
+              <div role="group" aria-label="다시 본 생각 고르기" className="space-y-2">
+                {r.lenses.map((l, i) => {
+                  const picked = lensPick === i;
+                  const tone =
+                    picked && l.kind === 'balanced'
+                      ? 'border-emo-calm bg-emo-calm/10'
+                      : picked
+                        ? 'border-night-sub bg-night-line/40'
+                        : 'border-night-line bg-night-card hover:border-night-sub';
+                  return (
+                    <button
+                      key={l.text}
+                      type="button"
+                      aria-pressed={picked}
+                      disabled={stage === 'clear' && !picked}
+                      onClick={() => pickLens(i)}
+                      className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left text-night-text transition disabled:opacity-40 ${tone}`}
+                    >
+                      <span aria-hidden="true" className="mt-0.5 text-night-sub">
+                        🔍
+                      </span>
+                      {l.text}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
+          {stage === 'clear' && (
+            <button
+              type="button"
+              onClick={nextRound}
+              className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
+            >
+              {round + 1 >= ROUNDS.length ? '사냥 끝내기' : '다음 거울로'}
+              <ArrowRight aria-hidden="true" className="h-4 w-4" />
+            </button>
+          )}
+        </section>
+      ) : (
+        <>
+          <section className="rounded-3xl border border-night-star/40 bg-night-card p-5 motion-safe:animate-[fadein_0.6s_ease-out]">
+            <p className="flex items-center gap-2 font-display text-xl text-night-text">
+              <Sparkles aria-hidden="true" className="h-5 w-5 text-night-star" />
+              함정 몬스터 다섯 마리를 모두 잡았어!
+            </p>
+            <p className="mt-2 leading-relaxed text-night-sub">
+              몬스터는 누구 머릿속에나 살아. 없앨 수는 없지만, 이름을 불러 주면 힘이 빠져. 마음이 확 상할 때 "지금 어떤 몬스터가 나왔지?" 하고 찾아봐.
+            </p>
+          </section>
+
+          {recent.length > 0 && (
+            <section aria-labelledby="own-title" className="space-y-3">
+              <h2 id="own-title" className="font-sans text-lg font-medium text-night-text">
+                보너스: 내 생각에도 몬스터가 숨어 있을까? <span className="text-sm font-normal text-night-sub">(선택)</span>
+              </h2>
+              <div className="flex flex-col gap-2">
+                {recent.map((c) => (
+                  <button
+                    key={c.id}
+                    type="button"
+                    aria-pressed={ownId === c.id}
+                    onClick={() => setOwnId(ownId === c.id ? null : c.id)}
+                    className={`rounded-2xl border p-3 text-left text-sm transition ${
+                      ownId === c.id ? 'border-night-star bg-night-star/10' : 'border-night-line bg-night-card hover:border-night-sub'
+                    }`}
+                  >
+                    <span className="text-night-text">{c.situation}</span>
+                    <span className="ml-2 text-xs text-night-sub">{emotionLabel(c)}</span>
+                  </button>
+                ))}
+              </div>
+              {own && (
+                <div className="flex flex-wrap gap-2" role="group" aria-label="내 생각에 숨은 몬스터 고르기">
+                  {TRAP_INFO.map((t) => (
+                    <Chip key={t.name} selected={ownTrap === t.name} onClick={() => setOwnTrap(ownTrap === t.name ? null : t.name)}>
+                      {t.monster} · {t.name}
+                    </Chip>
+                  ))}
+                </div>
+              )}
+            </section>
+          )}
+
+          <button
+            type="button"
+            onClick={finish}
+            className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105"
+          >
+            {alreadyDone ? '다시 기록하기' : '연습 마치기'}
+            <ArrowRight aria-hidden="true" className="h-4 w-4" />
+          </button>
+        </>
+      )}
     </PracticeShell>
   );
 }
