@@ -56,7 +56,7 @@ type StepIndex = 0 | 1 | 2 | 3 | 4;
 
 function Stepper({ current }: { current: StepIndex }) {
   return (
-    <ol className="mb-8 flex items-center gap-2 text-sm" aria-label="관측 단계">
+    <ol className="mb-8 flex items-center gap-1.5 text-sm sm:gap-2" aria-label="관측 단계">
       {STEPS.map((s, i) => (
         <li key={s} className="flex items-center gap-2" aria-current={i === current ? 'step' : undefined}>
           <span
@@ -70,8 +70,9 @@ function Stepper({ current }: { current: StepIndex }) {
           >
             {i + 1}
           </span>
-          <span className={i === current ? 'text-night-text' : 'text-night-sub'}>{s}</span>
-          {i < STEPS.length - 1 && <span aria-hidden="true" className="mx-1 h-px w-8 bg-night-line" />}
+          {/* 휴대폰에서는 지금 단계 이름만 보인다 */}
+          <span className={`whitespace-nowrap ${i === current ? 'text-night-text' : 'hidden text-night-sub sm:inline'}`}>{s}</span>
+          {i < STEPS.length - 1 && <span aria-hidden="true" className="mx-0.5 h-px w-4 bg-night-line sm:mx-1 sm:w-8" />}
         </li>
       ))}
     </ol>
@@ -250,7 +251,7 @@ export default function TelescopePage() {
       {step === 1 && (
         <section>
           {heading('어떤 렌즈를 끼워볼까?')}
-          <div className="mt-5 grid grid-cols-3 gap-3">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-3">
             {LENSES.map(({ strategy, icon: Icon, desc }) => (
               <button
                 key={strategy}

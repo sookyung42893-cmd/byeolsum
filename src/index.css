@@ -6,7 +6,6 @@
   html,
   body {
     @apply font-sans antialiased;
-    min-width: 1280px;
   }
   body {
     background: #0b1026;

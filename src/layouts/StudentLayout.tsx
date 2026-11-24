@@ -4,6 +4,7 @@ import { useApp, useCurrentStudent } from '../context/AppContext';
 import { autoCompletePractice } from '../lib/voyage';
 import { alertsOf } from '../lib/crisis';
 import StudentSideNav from '../components/student/StudentSideNav';
+import { StudentBottomNav, StudentTopBar } from '../components/student/StudentMobileNav';
 import HelpDialog from '../components/student/HelpDialog';
 import { ConsentPage, PreAssessmentPage } from '../pages/student/Onboarding';
 
@@ -27,7 +28,7 @@ function saveSeen(studentId: string, ids: string[]) {
 
 /**
  * 학생 화면 틀: 메뉴 + 본문.
- * 메뉴는 StudentSideNav로 분리돼 있어서, 모바일에서는 하단 탭 컴포넌트로 바꿔 끼우기만 하면 된다.
+ * 노트북(md 이상)은 왼쪽 사이드 메뉴, 휴대폰은 위쪽 바 + 아래쪽 탭 + 떠 있는 별똥별 버튼.
  * 처음 들어오면 동의 → 시작 척도를 거친 뒤에 앱을 쓸 수 있다.
  */
 export default function StudentLayout() {
@@ -73,13 +74,15 @@ export default function StudentLayout() {
   };
 
   return (
-    <div className="theme-night flex min-h-screen bg-night-bg text-night-text">
+    <div className="theme-night flex min-h-screen flex-col bg-night-bg text-night-text md:flex-row">
       <StudentSideNav student={student} onLogOut={handleLogOut} onHelp={() => setHelp('help')} />
-      <main className="min-w-0 flex-1 px-[4%] py-10">
+      <StudentTopBar student={student} onLogOut={handleLogOut} onHelp={() => setHelp('help')} />
+      <main className="min-w-0 flex-1 px-4 pb-36 pt-5 md:px-[4%] md:py-10">
         <div className="mx-auto max-w-6xl">
           <Outlet />
         </div>
       </main>
+      <StudentBottomNav />
       {help && <HelpDialog mode={help} onClose={closeHelp} />}
     </div>
   );

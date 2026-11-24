@@ -79,8 +79,8 @@ export default function BodyScanPage() {
       )}
 
       {phase === 'scan' && (
-        <section className="flex items-start gap-[5%]">
-          <div className="w-[34%] max-w-[14rem] shrink-0">
+        <section className="flex flex-col items-center gap-6 sm:flex-row sm:items-start sm:gap-[5%]">
+          <div className="w-[55%] max-w-[14rem] shrink-0 sm:w-[34%]">
             <BodyMap value={current} onChange={() => undefined} color="#FF9AAE" readOnly />
           </div>
           <div className="min-w-0 flex-1 space-y-5">

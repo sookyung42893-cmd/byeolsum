@@ -118,7 +118,7 @@ function EmotionPlane({
       <p id={helpId} className="col-span-3 mt-2 text-center text-xs" aria-live="polite">
         {point
           ? `지금 찍은 곳: ${describePoint(point.v, point.a)}`
-          : '마음이 있는 곳을 클릭해서 점을 찍어봐. 방향키로도 옮길 수 있어 (Shift를 누르면 크게).'}
+          : '마음이 있는 곳을 눌러서 점을 찍어봐. 방향키로도 옮길 수 있어 (Shift를 누르면 크게).'}
       </p>
     </div>
   );
@@ -282,8 +282,8 @@ function CheckInForm({ editTarget }: { editTarget?: CheckIn }) {
         </p>
       </header>
 
-      <div className="flex items-start gap-[4%]">
-        <div className="w-[46%] max-w-xl shrink-0">
+      <div className="flex flex-col gap-8 md:flex-row md:items-start md:gap-[4%]">
+        <div className="w-full max-w-xl shrink-0 md:w-[46%]">
           <EmotionPlane point={point} intensity={intensity} onChange={placePoint} />
         </div>
         <div className="min-w-0 flex-1">
@@ -385,7 +385,7 @@ function CheckInForm({ editTarget }: { editTarget?: CheckIn }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-night-sub">왼쪽 평면에 먼저 점을 찍으면 어울리는 마음들이 떠올라.</p>
+                <p className="text-sm text-night-sub">감정 평면에 먼저 점을 찍으면 어울리는 마음들이 떠올라.</p>
               )}
             </Step>
 

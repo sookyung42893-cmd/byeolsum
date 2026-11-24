@@ -10,8 +10,7 @@ const linkClass = (active: boolean) =>
   }`;
 
 /**
- * 노트북용 학생 사이드 메뉴. 모바일로 넓힐 때는 같은 STUDENT_NAV로 하단 탭 컴포넌트를 만들어
- * StudentLayout에서 이것과 바꿔 끼우면 된다.
+ * 노트북용 학생 사이드 메뉴. 휴대폰에서는 같은 STUDENT_NAV를 쓰는 StudentMobileNav(위쪽 바 + 아래쪽 탭)가 대신 보인다.
  */
 export default function StudentSideNav({
   student,
@@ -27,7 +26,7 @@ export default function StudentSideNav({
   const station = stationOfSession(student.currentSession);
 
   return (
-    <aside className="sticky top-0 flex h-screen w-[17%] min-w-[13rem] max-w-[16rem] shrink-0 flex-col border-r border-night-line bg-night-card/60 px-4 py-6">
+    <aside className="sticky top-0 hidden h-screen md:flex w-[17%] min-w-[13rem] max-w-[16rem] shrink-0 flex-col border-r border-night-line bg-night-card/60 px-4 py-6">
       <div className="px-4">
         <p className="font-display text-2xl text-night-star">별숨</p>
         <p className="mt-1 text-sm text-night-sub">{student.name}의 밤하늘</p>

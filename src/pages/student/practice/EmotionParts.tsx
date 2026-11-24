@@ -66,7 +66,7 @@ export default function EmotionPartsPage() {
           <div>
             <h2 className="font-sans text-lg font-medium text-night-text">2. 생각 · 몸 · 행동으로 나눠 보자</h2>
             <p className="mt-1 text-sm text-night-sub">감정은 한 덩어리 같지만, 사실 세 조각으로 이루어져 있어. 세 조각 모두 한 줄씩 적어 봐.</p>
-            <div className="mt-4 grid grid-cols-3 gap-[3%]">
+            <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-[3%]">
               {PARTS.map((p) => (
                 <div key={p.key} className="rounded-2xl border border-night-line bg-night-card p-4">
                   <label htmlFor={`part-${p.key}`} className="block">

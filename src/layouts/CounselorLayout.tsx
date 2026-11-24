@@ -69,7 +69,7 @@ export default function CounselorLayout() {
   };
 
   return (
-    <div className="theme-obs flex min-h-screen flex-col bg-obs-bg text-obs-text">
+    <div className="theme-obs flex min-h-screen min-w-[1280px] flex-col bg-obs-bg text-obs-text">
       <header className="flex h-16 shrink-0 items-center justify-between border-b border-obs-line bg-obs-card px-8">
         <div className="flex items-center gap-3">
           <Telescope aria-hidden="true" className="h-6 w-6 text-obs-accent" />

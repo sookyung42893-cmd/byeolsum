@@ -302,8 +302,8 @@ export default function ChallengePage() {
           </p>
           <ul className="mt-3 space-y-3">
             {postponed.map((c) => (
-              <li key={c.id} className="flex flex-wrap items-center gap-4 rounded-2xl border border-night-line bg-night-card p-4">
-                <CornerDownRight aria-hidden="true" className="h-5 w-5 shrink-0 text-night-sub" />
+              <li key={c.id} className="flex flex-col gap-3 rounded-2xl border border-night-line bg-night-card p-4 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                <CornerDownRight aria-hidden="true" className="hidden h-5 w-5 shrink-0 text-night-sub sm:block" />
                 <div className="min-w-0 flex-1">
                   <p className="text-xs text-night-sub">
                     {c.session}회기 · {c.step}단계 · {formatDate(c.createdAt)}에 받음

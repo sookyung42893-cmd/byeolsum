@@ -426,8 +426,9 @@ export default function VoyageMapPage() {
         </p>
       </header>
 
-      <div className="overflow-hidden rounded-3xl border border-night-line bg-[radial-gradient(ellipse_at_center,#18204A_0%,#0B1026_75%)]">
-        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full" role="group" aria-label="항해 지도, 정거장 일곱 곳">
+      {/* 휴대폰에서는 지도를 줄이지 않고 옆으로 밀어서 본다 */}
+      <div className="overflow-x-auto overflow-y-hidden rounded-3xl border border-night-line bg-[radial-gradient(ellipse_at_center,#18204A_0%,#0B1026_75%)]">
+        <svg viewBox={`0 0 ${W} ${H}`} className="block w-full min-w-[720px] md:min-w-0" role="group" aria-label="항해 지도, 정거장 일곱 곳">
           {DUST.map((d, i) => (
             <circle key={i} cx={d.x} cy={d.y} r={d.r} fill="#EEF0FF" opacity={d.o} aria-hidden="true" />
           ))}
@@ -462,7 +463,7 @@ export default function VoyageMapPage() {
         </svg>
       </div>
 
-      <section aria-live="polite" className="flex items-center justify-between gap-6 rounded-2xl border border-night-line bg-night-card px-6 py-5">
+      <section aria-live="polite" className="flex flex-col items-start gap-4 rounded-2xl border border-night-line bg-night-card px-5 py-5 sm:flex-row sm:items-center sm:justify-between sm:gap-6 sm:px-6">
         <div>
           <p className="flex items-center gap-2 text-sm text-night-sub">
             <span aria-hidden="true" className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: focus.color }} />

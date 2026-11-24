@@ -241,7 +241,7 @@ function TrapIntro({ onStart }: { onStart: () => void }) {
         )}
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         {step > 0 && (
           <button type="button" onClick={() => setStep(step - 1)} className="rounded-xl px-4 py-2.5 text-night-sub hover:text-night-text">
             이전
@@ -261,7 +261,7 @@ function TrapIntro({ onStart }: { onStart: () => void }) {
             type="button"
             onClick={() => setStep(step + 1)}
             disabled={step === 0 && seen.length < 2}
-            className="inline-flex items-center gap-2 rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
+            className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-night-star px-6 py-3 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
           >
             다음
             <ArrowRight aria-hidden="true" className="h-4 w-4" />

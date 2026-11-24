@@ -325,7 +325,7 @@ export default function CodexPage() {
         </p>
       </header>
 
-      <ul className="grid grid-cols-3 gap-[3%]">
+      <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-[3%]">
         {states.map(({ planet, state }) => {
           const done = completedCount(db, student.id, planet.id);
           const total = requiredMissions(db, student.id, planet.id).length;

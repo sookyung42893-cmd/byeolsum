@@ -76,8 +76,8 @@ function armTints(uses: StrategyUse[], animUseId: string | null, drawT: number):
   });
 }
 
-/** 별을 누르면 뜨는 작은 기록 카드 */
-function StarCard({ star, onClose }: { star: StarView; onClose: () => void }) {
+/** 별을 누르면 뜨는 작은 기록 카드. inline이면 (휴대폰) 밤하늘 아래에 펼쳐진다 */
+function StarCard({ star, onClose, inline = false }: { star: StarView; onClose: () => void; inline?: boolean }) {
   const { db, updateDb } = useApp();
   const { c, uses, x, y } = star;
   const left = Math.min(Math.max((x / W) * 100, 22), 78);
@@ -87,12 +87,16 @@ function StarCard({ star, onClose }: { star: StarView; onClose: () => void }) {
     <div
       role="dialog"
       aria-label={`${emotionLabel(c)} 별의 기록`}
-      className="absolute z-10 w-[min(20rem,44%)] rounded-2xl border border-night-line bg-night-card/95 p-4 text-sm shadow-xl backdrop-blur"
-      style={{
-        left: `${left}%`,
-        top: `${(y / H) * 100}%`,
-        transform: below ? 'translate(-50%, 26px)' : 'translate(-50%, calc(-100% - 26px))',
-      }}
+      className={`rounded-2xl border border-night-line bg-night-card/95 p-4 text-sm shadow-xl backdrop-blur ${inline ? 'w-full' : 'absolute z-10 w-[min(20rem,44%)]'}`}
+      style={
+        inline
+          ? undefined
+          : {
+              left: `${left}%`,
+              top: `${(y / H) * 100}%`,
+              transform: below ? 'translate(-50%, 26px)' : 'translate(-50%, calc(-100% - 26px))',
+            }
+      }
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
     >
       <div className="flex items-start justify-between gap-2">
@@ -485,7 +489,7 @@ export default function NightSkyPage() {
   };
 
   return (
-    <div className="flex gap-[3%]">
+    <div className="flex flex-col gap-8 md:flex-row md:gap-[3%]">
       <div className="min-w-0 flex-1">
         <header className="mb-6">
           <h1 className="text-3xl text-night-text">나의 밤하늘</h1>
@@ -577,7 +581,11 @@ export default function NightSkyPage() {
 
           </svg>
 
-          {pinned && <StarCard star={pinned} onClose={() => setPinnedId(null)} />}
+          {pinned && (
+            <div className="hidden md:block">
+              <StarCard star={pinned} onClose={() => setPinnedId(null)} />
+            </div>
+          )}
 
           {stars.length === 0 && (
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 text-center">
@@ -586,6 +594,12 @@ export default function NightSkyPage() {
             </div>
           )}
         </div>
+
+        {pinned && (
+          <div className="mt-3 md:hidden">
+            <StarCard star={pinned} onClose={() => setPinnedId(null)} inline />
+          </div>
+        )}
 
         <div className="mt-5 flex flex-wrap items-start justify-between gap-x-8 gap-y-3">
           <ul aria-label="별 색깔 안내" className="flex flex-wrap gap-x-5 gap-y-2 text-sm text-night-sub">
@@ -609,7 +623,7 @@ export default function NightSkyPage() {
         </ul>
       </div>
 
-      <aside className="w-[30%] min-w-[15rem] max-w-sm shrink-0 space-y-6 pt-2">
+      <aside className="w-full shrink-0 space-y-6 pt-2 md:w-[30%] md:min-w-[15rem] md:max-w-sm">
         <ChallengeSignal />
 
         <Link

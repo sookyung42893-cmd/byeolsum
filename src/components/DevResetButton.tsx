@@ -22,7 +22,7 @@ export default function DevResetButton() {
     <button
       type="button"
       onClick={reset}
-      className={`fixed bottom-3 right-3 z-50 inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-sm transition ${
+      className={`fixed z-50 ${light ? 'bottom-3 right-3' : 'bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 md:bottom-3 md:left-auto md:right-3'} inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-sm transition ${
         light
           ? 'border-obs-line bg-obs-card text-obs-sub hover:text-obs-text'
           : 'border-night-line bg-night-card text-night-sub hover:text-night-text'

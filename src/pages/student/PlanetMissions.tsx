@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { Link, Navigate, useLocation, useParams } from 'react-router-dom';
 import TrustedContactsEditor from '../../components/student/TrustedContacts';
 import { AssessmentForm } from './Onboarding';
@@ -449,7 +449,7 @@ export default function PlanetMissionsPage() {
                 >
                   <div className="h-full rounded-full" style={{ width: `${(done / required) * 100}%`, backgroundColor: planet.color }} />
                 </div>
-                <span className="text-sm tabular-nums text-night-text">
+                <span className="shrink-0 whitespace-nowrap text-sm tabular-nums text-night-text">
                   {done} / {required}
                 </span>
               </div>
@@ -476,7 +476,10 @@ export default function PlanetMissionsPage() {
           행성 미션
         </h2>
         {/* 미션 수(2개 또는 3개)만큼 같은 너비로 나란히 */}
-        <ul className="grid items-stretch gap-[2.5%]" style={{ gridTemplateColumns: `repeat(${missions.length}, minmax(0, 1fr))` }}>
+        <ul
+          className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-[repeat(var(--cols),minmax(0,1fr))] md:gap-[2.5%]"
+          style={{ '--cols': missions.length } as CSSProperties}
+        >
           {missions.map((m) => (
             <MissionCard
               key={m.id}

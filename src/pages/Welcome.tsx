@@ -209,11 +209,11 @@ export default function Welcome() {
   return (
     <div className="theme-night relative min-h-screen overflow-hidden bg-night-bg text-night-text">
       <StarField />
-      <main className="relative mx-auto grid min-h-screen max-w-6xl grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] items-center gap-[6%] px-[4%] py-12">
+      <main className="relative mx-auto grid min-h-screen max-w-6xl grid-cols-1 items-center gap-10 px-4 py-10 md:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] md:gap-[6%] md:px-[4%] md:py-12">
         <div>
           <p className="font-display text-lg tracking-[0.02em] text-night-sub">감정이 지나가는 밤하늘</p>
           {/* 마크 높이 1.15em, 세로 가운데 정렬, 글자와 바짝 */}
-          <h1 className="mt-3 flex items-center gap-[0.08em] text-7xl text-night-star">
+          <h1 className="mt-3 flex items-center gap-[0.08em] text-6xl text-night-star md:text-7xl">
             <Logo className="h-[1.15em] w-auto shrink-0" />
             별숨
           </h1>
@@ -257,7 +257,7 @@ export default function Welcome() {
                     <span className="block text-xs text-night-sub">어떤 학생으로 들어갈지 골라요</span>
                   </span>
                 </p>
-                <div className="mt-3 grid grid-cols-4 gap-2">
+                <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
                   {demoStudents.map(({ account, student }) => (
                     <button
                       key={account.id}

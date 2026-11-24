@@ -348,7 +348,7 @@ export default function MeteorPage() {
 
   return (
     <div className="max-w-4xl">
-      <header className="mb-6 flex items-start justify-between gap-4">
+      <header className="mb-6 flex flex-col items-start gap-3 sm:flex-row sm:justify-between sm:gap-4">
         <div>
           <h1 className="text-3xl text-night-text">별똥별 궤적</h1>
           <p className="mt-2 font-display text-xl text-night-star">모든 별똥별은 결국 사라져</p>
@@ -357,7 +357,7 @@ export default function MeteorPage() {
           type="button"
           onClick={toggleMusic}
           aria-pressed={musicOn}
-          className="inline-flex items-center gap-2 rounded-xl border border-night-line px-4 py-2 text-sm text-night-text hover:bg-night-line/50"
+          className="inline-flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl border border-night-line px-4 py-2 text-sm text-night-text hover:bg-night-line/50"
         >
           {musicOn ? <Volume2 aria-hidden="true" className="h-4 w-4" /> : <VolumeX aria-hidden="true" className="h-4 w-4" />}
           배경 음악 {musicOn ? '켜짐' : '꺼짐'}
@@ -428,7 +428,7 @@ export default function MeteorPage() {
                 {due ? (
                   <fieldset className="rounded-2xl border border-night-star/60 bg-night-card p-6">
                     <legend className="px-2 text-night-text">{currentMinute}분이 지났어. 지금 강도는?</legend>
-                    <div className="mt-2 grid grid-cols-11 gap-2">
+                    <div className="mt-2 grid grid-cols-6 gap-2 sm:grid-cols-11">
                       {Array.from({ length: 11 }, (_, n) => (
                         <button
                           key={n}
