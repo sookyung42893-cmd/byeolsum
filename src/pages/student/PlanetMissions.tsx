@@ -278,7 +278,7 @@ function RealForm({
               </div>
             )}
             <label htmlFor={fieldId} className="block text-sm text-night-text">
-              해보고 나서 한 줄 소감
+              해보고 나서 한 줄 소감 <span className="text-night-star">(꼭 적어 줘)</span>
             </label>
             <textarea
               id={fieldId}
@@ -311,7 +311,11 @@ function RealForm({
               </span>
             </div>
             <div className="flex flex-wrap gap-2 pt-1">
-              <button type="submit" className="inline-flex items-center gap-1.5 rounded-xl bg-night-star px-5 py-2.5 font-medium text-night-bg hover:brightness-105">
+              <button
+                type="submit"
+                disabled={!text.trim()}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-night-star px-5 py-2.5 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
+              >
                 <Check aria-hidden="true" className="h-4 w-4" />
                 {submitLabel}
               </button>

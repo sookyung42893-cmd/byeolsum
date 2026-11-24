@@ -174,7 +174,7 @@ function ActiveChallenge({ ch, onDone }: { ch: Challenge; onDone: (c: Challenge)
             </div>
             <div>
               <label htmlFor="challenge-reflection" className="block text-sm text-night-text">
-                해 보니 어땠는지 한 줄 소감
+                해 보니 어땠는지 한 줄 소감 <span className="text-night-star">(꼭 적어 줘)</span>
               </label>
               <textarea
                 id="challenge-reflection"
@@ -207,9 +207,13 @@ function ActiveChallenge({ ch, onDone }: { ch: Challenge; onDone: (c: Challenge)
                 </span>
               </div>
             </div>
-            <p className="text-xs text-night-sub">잘 됐든 아니든, 해 본 것만으로 용기의 별이 떠.</p>
+            <p className="text-xs text-night-sub">잘 됐든 아니든, 해 본 것만으로 용기의 별이 떠. {!text.trim() && '소감을 한 줄 적으면 기록할 수 있어.'}</p>
             <div className="flex flex-wrap gap-2">
-              <button type="submit" className="inline-flex items-center gap-1.5 rounded-xl bg-night-star px-5 py-2.5 font-medium text-night-bg hover:brightness-105">
+              <button
+                type="submit"
+                disabled={!text.trim()}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-night-star px-5 py-2.5 font-medium text-night-bg hover:brightness-105 disabled:cursor-not-allowed disabled:bg-night-line disabled:text-night-sub"
+              >
                 <Flag aria-hidden="true" className="h-4 w-4" />
                 도전 기록하기
               </button>
