@@ -242,7 +242,16 @@ const PROFILES: Profile[] = [
       { broad: '무기력', w: 0.8, situations: ['비 와서 하루 종일 축 처짐'] },
     ],
     broadOnlyRate: [0.2, 0.15],
-    fixed: [],
+    // 이번 주에 같은 마음을 여러 번 띄워 밤하늘에 별자리가 생기게 (차분함 · 홀가분함 · 뿌듯함)
+    fixed: [
+      { offset: 6, hour: 20, minute: 12, broad: '평온', fine: '차분함', intensity: 3, situation: '동아리 끝나고 친구랑 걸어옴' },
+      { offset: 5, hour: 17, minute: 40, broad: '만족', fine: '홀가분함', intensity: 4, situation: '수행평가 무사히 끝냄' },
+      { offset: 4, hour: 20, minute: 25, broad: '기쁨', fine: '뿌듯함', intensity: 5, situation: '발표 연습한 걸 선생님이 칭찬해줌' },
+      { offset: 3, hour: 21, minute: 5, broad: '평온', fine: '차분함', intensity: 2, situation: '자기 전에 짧게 일기 씀' },
+      { offset: 2, hour: 19, minute: 50, broad: '만족', fine: '홀가분함', intensity: 3, situation: '미뤄 둔 방 정리를 끝냄' },
+      { offset: 2, hour: 21, minute: 30, broad: '기쁨', fine: '뿌듯함', intensity: 4, situation: '동생 숙제를 끝까지 도와줌' },
+      { offset: 1, hour: 19, minute: 15, broad: '평온', fine: '차분함', intensity: 3, situation: '도서관에서 조용히 책 읽음' },
+    ],
     strategyRate: 0.6,
     strategyMin: 4,
     strategyWeights: { '3인칭 관측일지': 3, '1년 뒤 궤도': 2, '친구별 시점': 1 },
